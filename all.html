@@ -81,6 +81,8 @@
         
             <li><a href="sofa-rpc.html">sofa-rpc</a></li>
         
+            <li><a href="java.html">java</a></li>
+        
             <li><a href="sentinel.html">sentinel</a></li>
          
 
@@ -104,6 +106,125 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="15608480752996.html">
+                
+                  <h1>Java8函数式接口</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>函数式接口也称为SAM接口(Single Abstract Method interfaces)。具有如下特征</p>
+
+<ol>
+<li>一个接口</li>
+<li>接口只能有一个抽象方法，允许定义默认方法</li>
+</ol>
+
+<p>如果一个接口符合规范那么加上该注解编译器可以进行检查是否符合规范</p>
+
+<pre><code class="language-java">// 正确的函数式接口
+@FunctionalInterface
+public interface TestInterface {
+ 
+    // 抽象方法
+    public void sub();
+ 
+    // java.lang.Object中的public方法
+    public boolean equals(Object var1);
+ 
+    // 默认方法
+    public default void defaultMethod(){
+    
+    }
+ 
+    // 静态方法
+    public static void staticMethod(){
+ 
+    }
+}
+
+// 错误的函数式接口(有多个抽象方法)
+@FunctionalInterface
+public interface TestInterface2 {
+
+    void add();
+    
+    void sub();
+}
+
+</code></pre>
+
+<p>简书上面看到的例子</p>
+
+<pre><code class="language-text">/**
+ * 真正的业务处理
+ */
+@FunctionalInterface
+public static interface RequestExecutor {
+    Object doExecute() throws BusinessException;
+}
+
+/**
+ * 请求模板
+ */
+public void templateRequest(RequestExecutor executor) {
+    // 获取response对象
+    HttpServletResponse response =
+        ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
+    
+    try {
+        
+        Object result = executor.doExecute();
+        writeAjaxJSONResponse(ResultMessageBuilder.build(true, &quot;success!&quot;, result), response);
+        
+    } catch (Exception e) {
+    
+        logger.error(&quot;请求失败&quot;, e);
+        writeAjaxJSONResponse(ResultMessageBuilder.build(false, 500, &quot;系统异常&quot;), response);
+        
+    }
+}
+
+/**
+ * controller部分代码
+ */
+@PostMapping(path = &quot;/pageQuery&quot;)
+public void pageQuery(@RequestBody Query query) {
+    templateRequest(() -&gt; service.pageQuery(query));
+}
+
+/**
+ * service部分代码
+ */
+public PagedResult&lt;VO&gt; pageQuery(Query query);
+</code></pre>
+
+<p>具体可以看：<a href="https://www.jianshu.com/p/52cdc402fb5d">https://www.jianshu.com/p/52cdc402fb5d</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/6/18</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='java.html'>java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="15607549443455.html">
                 
                   <h1>Camel简介</h1>
@@ -111,7 +232,15 @@
                       
                       <div class="a-content-text">
                         
-                        	<p><img src="media/15607549443455/15607657264643.jpg" alt=""/></p>
+                        	<p>其实我的理解很简单，camel做了很多的抽象，抽象是根据schema进行的，每个资源有这个不同的schema然后对应着不通的Component。</p>
+
+<p><img src="media/15607549443455/15607657264643.jpg" alt=""/></p>
+
+<h1 id="toc_0">如何自定义Processer</h1>
+
+<p><img src="media/15607549443455/15608436779969.jpg" alt=""/></p>
+
+<p><code>Processor</code>接口为我们提供了接口，能够让你完全的处理<code>exchange</code></p>
 
                         
                       </div>
@@ -379,6 +508,8 @@
         
             <a href="sofa-rpc.html"><strong>sofa-rpc</strong></a>
         
+            <a href="java.html"><strong>java</strong></a>
+        
             <a href="sentinel.html"><strong>sentinel</strong></a>
          
         </p>
@@ -394,6 +525,12 @@
                 <div class="side-content">
                 <ul class="posts-list">
 	      
+		      
+			      <li class="post">
+			        <a href="15608480752996.html">Java8函数式接口</a>
+			      </li>
+		     
+		  
 		      
 			      <li class="post">
 			        <a href="15607549443455.html">Camel简介</a>
@@ -419,10 +556,6 @@
 		     
 		  
 		      
-			      <li class="post">
-			        <a href="15382254433742.html">opentracing-doc</a>
-			      </li>
-		     
 		  
 		      
 		   
