@@ -128,13 +128,156 @@
       <div class="article-content">
       <p>其实我的理解很简单，camel做了很多的抽象，抽象是根据schema进行的，每个资源有这个不同的schema然后对应着不通的Component。</p>
 
+<span id="more"></span><!-- more -->
+
+<h1 id="toc_0">Message与Exchange</h1>
+
+<h2 id="toc_1">Message</h2>
+
+<p><img src="media/15607549443455/15608521579353.jpg" alt=""/></p>
+
+<p><code>Message</code>包含三个数据已经在上图指出。</p>
+
+<p>同时Message还有一个错误标志<code>FAULT FLAG</code>类似于WSDL JBI这种，他们会将标准输出以及错误输出区分开来，Camel通过这个标志来进行表示，但是通常集成程序不会处理错误输出一般应该在应用层面解决。</p>
+
+<p>在路由过程中，<code>message</code>存储在<code>exchange</code>中。</p>
+
+<h2 id="toc_2">Exchange</h2>
+
+<p><code>Exchange</code>作为当消息在路由时的存储单位。同时一个<code>Exchange</code>提供多种类型在不通的系统交互中。例如MEP(message exchange patterns)有两种类型<code>one-way</code>或者<code>request-response</code></p>
+
+<p><code>Exchange</code>通过字段来进行标识。</p>
+
+<ul>
+<li>InOnly <code>one-way</code>类型，例如JMS Message</li>
+<li>InOut <code>request-response</code> 类型，例如HTTP请求</li>
+</ul>
+
+<p><img src="media/15607549443455/15608525546641.jpg" alt=""/></p>
+
+<ul>
+<li>Exchange ID 用来标识不通的exchange</li>
+<li>MEP  用来标识Exchange类型，上面说的InOnly或者Inout</li>
+<li>Exception  当路由消息发生错误的时候将会存储错误信息</li>
+<li>Properties 类似于<code>Message</code>的Header用来存储配置信息</li>
+<li>InMessage  存储进来的消息</li>
+<li>OutMessage 存储出去的信息只有type为Inout的时候</li>
+</ul>
+
+<h1 id="toc_3">Camel的大致结构</h1>
+
 <p><img src="media/15607549443455/15607657264643.jpg" alt=""/></p>
 
-<h1 id="toc_0">如何自定义Processer</h1>
+<ul>
+<li>RoutingEngine  负责通过用户DSL定义的路由规则进行消息的路由。</li>
+<li>Processor      用来在路由过程中处理消息。</li>
+<li>Components     是Camel的扩展点，特别说明下EndPoint是Camel的具体抽象接口，不通的Component需要提供不同的EndPoint。</li>
+</ul>
 
-<p><img src="media/15607549443455/15608436779969.jpg" alt=""/></p>
+<h1 id="toc_4">Camel中的概念</h1>
 
-<p><code>Processor</code>接口为我们提供了接口，能够让你完全的处理<code>exchange</code></p>
+<h2 id="toc_5">CamelContext</h2>
+
+<p>CamelContext目前我的理解为Camel的核心大脑负责保存各种各样的信息。类似于SpringContext。</p>
+
+<p><img src="media/15607549443455/15608533713728.jpg" alt=""/></p>
+
+<h2 id="toc_6">RoutingEngine</h2>
+
+<p>负责消息的路由</p>
+
+<h2 id="toc_7">ROUTES</h2>
+
+<p>Camel中的最重要的抽象，规划消息的路由链路</p>
+
+<h2 id="toc_8">DSL</h2>
+
+<p>为了将Processor与EndPoint连接起来，Camel定义了DSL语言类似于JAVA的流式语法</p>
+
+<p>简单的demo</p>
+
+<pre><code class="language-text">from(&quot;file:data/inbox&quot;)
+    .filter().xpath(&quot;/order[not(@test)]&quot;)
+    .to(&quot;jms:queue:order&quot;)
+</code></pre>
+
+<p>Camel对Spring的支持，配置如下</p>
+
+<pre><code class="language-text">&lt;route&gt;
+  &lt;from uri=&quot;file:data/inbox&quot;/&gt;
+  &lt;filter&gt;
+    &lt;xpath&gt;/order[not(@test)]&lt;/xpath&gt;
+    &lt;to uri=&quot;jms:queue:order&quot;/&gt;
+  &lt;/filter&gt;
+&lt;/route&gt;
+</code></pre>
+
+<p>每一个Route规则实际是对应着一个Processor</p>
+
+<h2 id="toc_9">Processor</h2>
+
+<p>处理器，负责根据路由中定义的进行处理</p>
+
+<h2 id="toc_10">Component</h2>
+
+<p>Camel中最大的扩展点，用户可以进行自定义扩展，同时Component也是EndPoint的Factory</p>
+
+<h2 id="toc_11">EndPoint</h2>
+
+<p><img src="media/15607549443455/15608545208923.jpg" alt=""/></p>
+
+<p>EndPoint是Camel对第三方的抽象，通过它可以进行收发消息。</p>
+
+<p>在Camel中我们定义EndPoint通过URIs，例如<code>file:data/inbox?delay=5000</code>然后Camle在进行解析</p>
+
+<p><img src="media/15607549443455/15608546589925.jpg" alt=""/></p>
+
+<ul>
+<li>Scheme 将决定使用哪个Component，上面的demo将会使用<code>FileComponent</code></li>
+<li>ContextPath 决定了对哪个路径进行操作</li>
+<li>Options 操作参数，上面表示每隔5s轮询一次</li>
+</ul>
+
+<p><img src="media/15607549443455/15608548787200.jpg" alt=""/></p>
+
+<p>上面的图展示了<code>EndPoint</code>、<code>producer</code>、<code>consumers</code>以及<code>Exchange</code>之间是如何交互的，如上图所示<code>EndPoint</code>实际上是<code>producer</code>以及<code>consumers</code>的制造工厂。</p>
+
+<h2 id="toc_12">Producer</h2>
+
+<p><code>Producer</code>是Camel中的抽象类负责制造发送消息，当一个消息需要发送到一个<code>endpoint</code>消息生产者负责填充信息。</p>
+
+<h2 id="toc_13">CONSUMER</h2>
+
+<p>负责消费信息，并包装在<code>exchange</code>中，然后将他们发送给<code>Processor</code>进行处理。</p>
+
+<h3 id="toc_14">EVENT-DRIVEN CONSUMER</h3>
+
+<p><img src="media/15607549443455/15608554823221.jpg" alt=""/></p>
+
+<p>最常见的消息消费模式，事件驱动类型。(异步)</p>
+
+<h3 id="toc_15">POLLING CONSUMER</h3>
+
+<p><img src="media/15607549443455/15608554901783.jpg" alt=""/></p>
+
+<p>轮序拉取类型。（FTP）</p>
+
+<h1 id="toc_16">简单的DEMO</h1>
+
+<pre><code class="language-java">public class FileCopierWithCamel {
+    public static void main(String args[]) throws Exception {
+CamelContext context = new DefaultCamelContext();
+        context.addRoutes(new RouteBuilder() {
+            public void configure() {
+                from(&quot;file:data/inbox?noop=true&quot;)
+                    .to(&quot;file:data/outbox&quot;);
+} });
+        context.start();
+        Thread.sleep(10000);
+        context.stop();
+    }
+}
+</code></pre>
 
 
     
