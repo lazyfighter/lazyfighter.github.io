@@ -192,84 +192,6 @@
 
 <p>如果一个接口符合规范那么加上该注解编译器可以进行检查是否符合规范</p>
 
-<pre><code class="language-java">// 正确的函数式接口
-@FunctionalInterface
-public interface TestInterface {
- 
-    // 抽象方法
-    public void sub();
- 
-    // java.lang.Object中的public方法
-    public boolean equals(Object var1);
- 
-    // 默认方法
-    public default void defaultMethod(){
-    
-    }
- 
-    // 静态方法
-    public static void staticMethod(){
- 
-    }
-}
-
-// 错误的函数式接口(有多个抽象方法)
-@FunctionalInterface
-public interface TestInterface2 {
-
-    void add();
-    
-    void sub();
-}
-
-</code></pre>
-
-<p>简书上面看到的例子</p>
-
-<pre><code class="language-text">/**
- * 真正的业务处理
- */
-@FunctionalInterface
-public static interface RequestExecutor {
-    Object doExecute() throws BusinessException;
-}
-
-/**
- * 请求模板
- */
-public void templateRequest(RequestExecutor executor) {
-    // 获取response对象
-    HttpServletResponse response =
-        ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
-    
-    try {
-        
-        Object result = executor.doExecute();
-        writeAjaxJSONResponse(ResultMessageBuilder.build(true, &quot;success!&quot;, result), response);
-        
-    } catch (Exception e) {
-    
-        logger.error(&quot;请求失败&quot;, e);
-        writeAjaxJSONResponse(ResultMessageBuilder.build(false, 500, &quot;系统异常&quot;), response);
-        
-    }
-}
-
-/**
- * controller部分代码
- */
-@PostMapping(path = &quot;/pageQuery&quot;)
-public void pageQuery(@RequestBody Query query) {
-    templateRequest(() -&gt; service.pageQuery(query));
-}
-
-/**
- * service部分代码
- */
-public PagedResult&lt;VO&gt; pageQuery(Query query);
-</code></pre>
-
-<p>具体可以看：<a href="https://www.jianshu.com/p/52cdc402fb5d">https://www.jianshu.com/p/52cdc402fb5d</a></p>
 
                         
                       </div>
@@ -277,7 +199,7 @@ public PagedResult&lt;VO&gt; pageQuery(Query query);
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                  
+                   <a href="15608480752996.html">Read more</a>&nbsp;&nbsp; 
                     <span class="date">2019/6/18</span>
                     <span>posted in&nbsp;</span> 
           				  
