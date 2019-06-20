@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Camel简介 - lazyfighter.com
+  数据类型转换 - lazyfighter.com
   
   </title>
   
@@ -106,10 +106,10 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>Camel简介</h1>
+          <h1>数据类型转换</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2019/6/17</span>
+          <span class="date">2019/6/20</span>
 
           <span>posted in&nbsp;</span> 
           
@@ -126,158 +126,179 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>其实我的理解很简单，camel做了很多的抽象，抽象是根据schema进行的，每个资源有这个不同的schema然后对应着不同的Component，也就是对应这资源的push或者pull。配置的router类似于java的stream-api，每个router对应着processor</p>
+      <p>在EIP中，每个系统基本上都有着自己的协议或者数据类型，但是如何处理系统之间的协议转换在EIP中是一个非常重要的特性，在camel中同样也是。</p>
 
-<span id="more"></span><!-- more -->
+<h1 id="toc_0">Camel中的数据转换</h1>
 
-<h1 id="toc_0">Message与Exchange</h1>
-
-<h2 id="toc_1">Message</h2>
-
-<p><img src="media/15607549443455/15608521579353.jpg" alt=""/></p>
-
-<p><code>Message</code>包含三个数据已经在上图指出。</p>
-
-<p>同时Message还有一个错误标志<code>FAULT FLAG</code>类似于WSDL JBI这种，他们会将标准输出以及错误输出区分开来，Camel通过这个标志来进行表示，但是通常集成程序不会处理错误输出一般应该在应用层面解决。</p>
-
-<p>在路由过程中，<code>message</code>存储在<code>exchange</code>中。</p>
-
-<h2 id="toc_2">Exchange</h2>
-
-<p><code>Exchange</code>作为当消息在路由时的存储单位。同时一个<code>Exchange</code>提供多种类型在不通的系统交互中。例如MEP(message exchange patterns)有两种类型<code>one-way</code>或者<code>request-response</code></p>
-
-<p><code>Exchange</code>通过字段来进行标识。</p>
+<p>在camel中数据转换是一个 比较广义的话题，一共包含两种模式</p>
 
 <ul>
-<li>InOnly <code>one-way</code>类型，例如JMS Message</li>
-<li>InOut <code>request-response</code> 类型，例如HTTP请求</li>
+<li>Data format transformation,这种模式主要是将message从一个格式转换为另外一个格式例如 csv转xml</li>
+<li>Data type transformation,这种模式主要是讲message从一个类型转换为另一种类型，例如将java.lang.String转换为javax.jms.TextMessage</li>
 </ul>
 
-<p><img src="media/15607549443455/15608525546641.jpg" alt=""/></p>
+<p><img src="media/15610134857901/15610138905481.jpg" alt=""/></p>
+
+<h2 id="toc_1">Camel中提供了六种基础的数据转换器</h2>
+
+<p><img src="media/15610134857901/15610141582279.jpg" alt=""/></p>
+
+<p>不过在camel中提供了API可以允许用户进行自定义数据类型转换（java code）</p>
+
+<h2 id="toc_2">使用数据转换EIP</h2>
+
+<p>数据转换器主要是提供将消息从一个类型转换为另一种类型。</p>
+
+<p><img src="media/15610134857901/15610143617987.jpg" alt=""/></p>
+
+<p>Camel提供了三种方式：</p>
 
 <ul>
-<li>Exchange ID 用来标识不通的exchange</li>
-<li>MEP  用来标识Exchange类型，上面说的InOnly或者Inout</li>
-<li>Exception  当路由消息发生错误的时候将会存储错误信息</li>
-<li>Properties 类似于<code>Message</code>的Header用来存储配置信息</li>
-<li>InMessage  存储进来的消息</li>
-<li>OutMessage 存储出去的信息只有type为Inout的时候</li>
+<li>Processor</li>
+<li>Beans</li>
+<li><transform></li>
 </ul>
 
-<h1 id="toc_3">Camel的大致结构</h1>
+<h3 id="toc_3">Processor方式</h3>
 
-<p><img src="media/15607549443455/15607657264643.jpg" alt=""/></p>
+<p>Processor方式主要是实现接口<code>org.apache.camel.Processor</code>同时它提供给你访问<code>CamelContext</code>的权限</p>
 
-<ul>
-<li>RoutingEngine  负责通过用户DSL定义的路由规则进行消息的路由。</li>
-<li>Processor      用来在路由过程中处理消息。</li>
-<li>Components     是Camel的扩展点，特别说明下EndPoint是Camel的具体抽象接口，不通的Component需要提供不同的EndPoint。</li>
-</ul>
+<h4 id="toc_4">demo</h4>
 
-<h1 id="toc_4">Camel中的概念</h1>
+<p>目前有需要将一个HTTP接口返回的数据转换为CSV形式进行输出</p>
 
-<h2 id="toc_5">CamelContext</h2>
-
-<p>CamelContext目前我的理解为Camel的核心大脑负责保存各种各样的信息。类似于SpringContext。</p>
-
-<p><img src="media/15607549443455/15608533713728.jpg" alt=""/></p>
-
-<h2 id="toc_6">RoutingEngine</h2>
-
-<p>负责消息的路由</p>
-
-<h2 id="toc_7">ROUTES</h2>
-
-<p>Camel中的最重要的抽象，规划消息的路由链路</p>
-
-<h2 id="toc_8">DSL</h2>
-
-<p>为了将Processor与EndPoint连接起来，Camel定义了DSL语言类似于JAVA的流式语法</p>
-
-<p>简单的demo</p>
-
-<pre><code class="language-text">from(&quot;file:data/inbox&quot;)
-    .filter().xpath(&quot;/order[not(@test)]&quot;)
-    .to(&quot;jms:queue:order&quot;)
-</code></pre>
-
-<p>Camel对Spring的支持，配置如下</p>
-
-<pre><code class="language-text">&lt;route&gt;
-  &lt;from uri=&quot;file:data/inbox&quot;/&gt;
-  &lt;filter&gt;
-    &lt;xpath&gt;/order[not(@test)]&lt;/xpath&gt;
-    &lt;to uri=&quot;jms:queue:order&quot;/&gt;
-  &lt;/filter&gt;
-&lt;/route&gt;
-</code></pre>
-
-<p>每一个Route规则实际是对应着一个Processor</p>
-
-<h2 id="toc_9">Processor</h2>
-
-<p>处理器，负责根据路由中定义的进行处理</p>
-
-<h2 id="toc_10">Component</h2>
-
-<p>Camel中最大的扩展点，用户可以进行自定义扩展，同时Component也是EndPoint的Factory</p>
-
-<h2 id="toc_11">EndPoint</h2>
-
-<p><img src="media/15607549443455/15608545208923.jpg" alt=""/></p>
-
-<p>EndPoint是Camel对第三方的抽象，通过它可以进行收发消息。</p>
-
-<p>在Camel中我们定义EndPoint通过URIs，例如<code>file:data/inbox?delay=5000</code>然后Camle在进行解析</p>
-
-<p><img src="media/15607549443455/15608546589925.jpg" alt=""/></p>
-
-<ul>
-<li>Scheme 将决定使用哪个Component，上面的demo将会使用<code>FileComponent</code></li>
-<li>ContextPath 决定了对哪个路径进行操作</li>
-<li>Options 操作参数，上面表示每隔5s轮询一次</li>
-</ul>
-
-<p><img src="media/15607549443455/15608548787200.jpg" alt=""/></p>
-
-<p>上面的图展示了<code>EndPoint</code>、<code>producer</code>、<code>consumers</code>以及<code>Exchange</code>之间是如何交互的，如上图所示<code>EndPoint</code>实际上是<code>producer</code>以及<code>consumers</code>的制造工厂。</p>
-
-<h2 id="toc_12">Producer</h2>
-
-<p><code>Producer</code>是Camel中的抽象类负责制造发送消息，当一个消息需要发送到一个<code>endpoint</code>消息生产者负责填充信息。</p>
-
-<h2 id="toc_13">CONSUMER</h2>
-
-<p>负责消费信息，并包装在<code>exchange</code>中，然后将他们发送给<code>Processor</code>进行处理。</p>
-
-<h3 id="toc_14">EVENT-DRIVEN CONSUMER</h3>
-
-<p><img src="media/15607549443455/15608554823221.jpg" alt=""/></p>
-
-<p>最常见的消息消费模式，事件驱动类型。(异步)</p>
-
-<h3 id="toc_15">POLLING CONSUMER</h3>
-
-<p><img src="media/15607549443455/15608554901783.jpg" alt=""/></p>
-
-<p>轮序拉取类型。（FTP）</p>
-
-<h1 id="toc_16">简单的DEMO</h1>
-
-<pre><code class="language-java">public class FileCopierWithCamel {
-    public static void main(String args[]) throws Exception {
-CamelContext context = new DefaultCamelContext();
-        context.addRoutes(new RouteBuilder() {
-            public void configure() {
-                from(&quot;file:data/inbox?noop=true&quot;)
-                    .to(&quot;file:data/outbox&quot;);
-} });
-        context.start();
-        Thread.sleep(10000);
-        context.stop();
+<pre><code class="language-java">import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+public class OrderToCsvProcessor implements Processor {
+    public void process(Exchange exchange) throws Exception {
+        String custom = exchange.getIn()
+                            .getBody(String.class);
+        String id = custom.substring(0, 9);
+        String customerId = custom.substring(10, 19);
+        String date = custom.substring(20, 29);
+        String items = custom.substring(30);
+        String[] itemIds = items.split(&quot;@&quot;);
+        StringBuilder csv = new StringBuilder();
+        csv.append(id.trim());
+        csv.append(&quot;,&quot;).append(date.trim());
+        csv.append(&quot;,&quot;).append(customerId.trim());
+        for (String item : itemIds) {
+            csv.append(&quot;,&quot;).append(item.trim());
+        }
+        exchange.getIn().setBody(csv.toString());
     }
 }
+
+from(&quot;quartz://report?cron=0+0+6+*+*+?&quot;)
+    .to(&quot;http://riders.com/orders/cmd=received&amp;date=yesterday&quot;)
+    .process(new OrderToCsvProcessor())
+    .to(&quot;file://riders/orders?fileName=report-${header.Date}.csv&quot;);
+
 </code></pre>
+
+<h3 id="toc_5">使用Beans方式</h3>
+
+<pre><code class="language-java">public class OrderToCsvBean {
+    public static String map(String custom) {
+        String id = custom.substring(0, 9);
+        String customerId = custom.substring(10, 19);
+        String date = custom.substring(20, 29);
+        String items = custom.substring(30);
+        String[] itemIds = items.split(&quot;@&quot;);
+        StringBuilder csv = new StringBuilder();
+        csv.append(id.trim());
+        csv.append(&quot;,&quot;).append(date.trim());
+        csv.append(&quot;,&quot;).append(customerId.trim());
+        for (String item : itemIds) {
+            csv.append(&quot;,&quot;).append(item.trim());
+        }
+        return csv.toString();
+    }
+}
+
+from(&quot;quartz://report?cron=0+0+6+*+*+?&quot;)
+    .to(&quot;http://riders.com/orders/cmd=received&amp;date=yesterday&quot;)
+    .bean(new OrderToCsvBean())
+    .to(&quot;file://riders/orders?fileName=report-${header.Date}.csv&quot;);
+
+
+</code></pre>
+
+<h3 id="toc_6">transform方式</h3>
+
+<pre><code class="language-text">from(&quot;direct:start&quot;)
+    .transform(body().regexReplaceAll(&quot;\n&quot;, &quot;&lt;br/&gt;&quot;))
+    .to(&quot;mock:result&quot;);
+
+from(&quot;direct:start&quot;)
+    .transform(new Expression() {
+public &lt;T&gt; T evaluate(Exchange exchange, Class&lt;T&gt; type) { String body = exchange.getIn().getBody(String.class); body = body.replaceAll(&quot;\n&quot;, &quot;&lt;br/&gt;&quot;);
+body = &quot;&lt;body&gt;&quot; + body + &quot;&lt;/body&gt;&quot;;
+            return (T) body;
+        }
+    })
+    .to(&quot;mock:result&quot;);
+
+
+</code></pre>
+
+<h2 id="toc_7">使用合成方式</h2>
+
+<p><img src="media/15610134857901/15610155501491.jpg" alt=""/></p>
+
+<p>合成方式主要是讲两个资源进行集成一种然后进行输出</p>
+
+<p>demo: 目前的需求是目前HTTP以及FTP服务上面各存储一份订单数据，我们需要进行整合输出</p>
+
+<p><img src="media/15610134857901/15610156652415.jpg" alt=""/></p>
+
+<p>在Camel中提供了两种整合方式</p>
+
+<ul>
+<li>pollEnrich 这种方式数据来源为Consumer</li>
+<li>enrich 这种方式数据来源为Producer</li>
+</ul>
+
+<p>两种方式的区别就是一个是Consumer为数据源一个是Producer作为数据源，例如<code>FileComponent</code>两种都可以但是enrich将会把数据写到文件中，pollEnrich将会从文件中读取数据，但是<code>HTTPComponent</code>只能使用enrich，将response作为数据源。</p>
+
+<p>同时在进行聚合的时候需要实现<code>org.apache.camel.processor.AggregationStrategy</code>接口来接受两个数据源然后进行合并。</p>
+
+<pre><code class="language-java">from(&quot;quartz://report?cron=0+0+6+*+*+?&quot;)
+    .to(&quot;http://riders.com/orders/cmd=received&quot;)
+    .process(new OrderToCSVProcessor())
+    .pollEnrich(&quot;ftp://riders.com/orders/?username=rider&amp;password=secret&quot;,new AggregationStrategy() {
+public Exchange aggregate(Exchange oldExchange,
+                          Exchange newExchange) {
+    if (newExchange == null) {
+        return oldExchange;
+    }
+    String http = oldExchange.getIn()
+                      .getBody(String.class);
+    String ftp = newExchange.getIn()
+                      .getBody(String.class);
+    String body = http + &quot;\n&quot; + ftp;
+    oldExchange.getIn().setBody(body);
+Uses pollEnrich B to read FTP file
+C Merges data using AggregationStrategy
+         return oldExchange;
+    }
+})
+.to(&quot;file://riders/orders&quot;);
+</code></pre>
+
+<p>同时<code>PollEnrich</code>会提供三个time参数来获取数据</p>
+
+<ul>
+<li>pollEnrich(timeout = -1) 一直等到数据源好了</li>
+<li>pollEnrich(timeout = 0)  直接请求没有返回NULL</li>
+<li>pollEnrich(timeout &gt; 0) 等待数据源，直到设置到超时时间</li>
+</ul>
+
+<h2 id="toc_8">类型转换</h2>
+
+<p>在Camel应用启动的时候，Camel会将所有的<code>TypeConverter</code>注册到<code>TypeConverterRegistry</code>通过<code>org.apache.camel.impl.con- verter.AnnotationTypeConverterLoader</code>扫描classpath方式，这意味着将会扫描所有的转换器</p>
+
+<p><img src="media/15610134857901/15610167806484.jpg" alt=""/></p>
 
 
     
@@ -288,16 +309,13 @@ CamelContext context = new DefaultCamelContext();
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15608480752996.html" 
-          title="Previous Post: Java8函数式接口">&laquo; Java8函数式接口</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="15604111019339.html" 
-          title="Next Post: 集群限流">集群限流 &raquo;</a>
+          <a  href="15608581912296.html" 
+          title="Next Post: Camel的应用">Camel的应用 &raquo;</a>
       
       </p>
         </div>
