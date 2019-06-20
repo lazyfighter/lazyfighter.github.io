@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  数据类型转换 - lazyfighter.com
+  Camel中的数据类型转换 - lazyfighter.com
   
   </title>
   
@@ -106,7 +106,7 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>数据类型转换</h1>
+          <h1>Camel中的数据类型转换</h1>
      
         <div class="read-more clearfix">
           <span class="date">2019/6/20</span>
@@ -128,7 +128,7 @@
       <div class="article-content">
       <p>在EIP中，每个系统基本上都有着自己的协议或者数据类型，但是如何处理系统之间的协议转换在EIP中是一个非常重要的特性，在camel中同样也是。</p>
 
-<h1 id="toc_0">Camel中的数据转换</h1>
+<span id="more"></span><!-- more -->
 
 <p>在camel中数据转换是一个 比较广义的话题，一共包含两种模式</p>
 
@@ -139,13 +139,13 @@
 
 <p><img src="media/15610134857901/15610138905481.jpg" alt=""/></p>
 
-<h2 id="toc_1">Camel中提供了六种基础的数据转换器</h2>
+<h2 id="toc_0">Camel中提供了六种基础的数据转换器</h2>
 
 <p><img src="media/15610134857901/15610141582279.jpg" alt=""/></p>
 
 <p>不过在camel中提供了API可以允许用户进行自定义数据类型转换（java code）</p>
 
-<h2 id="toc_2">使用数据转换EIP</h2>
+<h2 id="toc_1">使用数据转换EIP</h2>
 
 <p>数据转换器主要是提供将消息从一个类型转换为另一种类型。</p>
 
@@ -159,11 +159,11 @@
 <li><transform></li>
 </ul>
 
-<h3 id="toc_3">Processor方式</h3>
+<h3 id="toc_2">Processor方式</h3>
 
 <p>Processor方式主要是实现接口<code>org.apache.camel.Processor</code>同时它提供给你访问<code>CamelContext</code>的权限</p>
 
-<h4 id="toc_4">demo</h4>
+<h4 id="toc_3">demo</h4>
 
 <p>目前有需要将一个HTTP接口返回的数据转换为CSV形式进行输出</p>
 
@@ -196,7 +196,7 @@ from(&quot;quartz://report?cron=0+0+6+*+*+?&quot;)
 
 </code></pre>
 
-<h3 id="toc_5">使用Beans方式</h3>
+<h3 id="toc_4">使用Beans方式</h3>
 
 <pre><code class="language-java">public class OrderToCsvBean {
     public static String map(String custom) {
@@ -224,7 +224,7 @@ from(&quot;quartz://report?cron=0+0+6+*+*+?&quot;)
 
 </code></pre>
 
-<h3 id="toc_6">transform方式</h3>
+<h3 id="toc_5">transform方式</h3>
 
 <pre><code class="language-text">from(&quot;direct:start&quot;)
     .transform(body().regexReplaceAll(&quot;\n&quot;, &quot;&lt;br/&gt;&quot;))
@@ -242,7 +242,7 @@ body = &quot;&lt;body&gt;&quot; + body + &quot;&lt;/body&gt;&quot;;
 
 </code></pre>
 
-<h2 id="toc_7">使用合成方式</h2>
+<h2 id="toc_6">使用合成方式</h2>
 
 <p><img src="media/15610134857901/15610155501491.jpg" alt=""/></p>
 
@@ -294,7 +294,7 @@ C Merges data using AggregationStrategy
 <li>pollEnrich(timeout &gt; 0) 等待数据源，直到设置到超时时间</li>
 </ul>
 
-<h2 id="toc_8">类型转换</h2>
+<h2 id="toc_7">类型转换</h2>
 
 <p>在Camel应用启动的时候，Camel会将所有的<code>TypeConverter</code>注册到<code>TypeConverterRegistry</code>通过<code>org.apache.camel.impl.con- verter.AnnotationTypeConverterLoader</code>扫描classpath方式，这意味着将会扫描所有的转换器</p>
 
@@ -392,7 +392,7 @@ C Merges data using AggregationStrategy
 	      
 		      
 			      <li class="post">
-			        <a href="15610134857901.html">数据类型转换</a>
+			        <a href="15610134857901.html">Camel中的数据类型转换</a>
 			      </li>
 		     
 		  
