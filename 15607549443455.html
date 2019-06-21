@@ -197,7 +197,8 @@
 <p>简单的demo</p>
 
 <pre><code class="language-text">from(&quot;file:data/inbox&quot;)
-    .filter().xpath(&quot;/order[not(@test)]&quot;)
+    .filter()
+    .xpath(&quot;/order[not(@test)]&quot;)
     .to(&quot;jms:queue:order&quot;)
 </code></pre>
 
@@ -321,6 +322,8 @@ CamelContext context = new DefaultCamelContext();
   <div class="hide-for-small">
     <div id="sidebar" class="sidebar">
           <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="https://pic.wenwen.soso.com/p/20141016/20141016170205-https://pic.wenwen.soso.com/p/20141016/20141016170205-1919883500.jpg" /></div>
             
                 <h1>lazyfighter.com</h1>
                 <div class="site-des"></div>

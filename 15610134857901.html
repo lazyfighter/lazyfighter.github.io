@@ -278,9 +278,7 @@ public Exchange aggregate(Exchange oldExchange,
                       .getBody(String.class);
     String body = http + &quot;\n&quot; + ftp;
     oldExchange.getIn().setBody(body);
-Uses pollEnrich B to read FTP file
-C Merges data using AggregationStrategy
-         return oldExchange;
+    return oldExchange;
     }
 })
 .to(&quot;file://riders/orders&quot;);
@@ -342,6 +340,8 @@ C Merges data using AggregationStrategy
   <div class="hide-for-small">
     <div id="sidebar" class="sidebar">
           <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="https://pic.wenwen.soso.com/p/20141016/20141016170205-https://pic.wenwen.soso.com/p/20141016/20141016170205-1919883500.jpg" /></div>
             
                 <h1>lazyfighter.com</h1>
                 <div class="site-des"></div>
