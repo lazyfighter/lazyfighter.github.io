@@ -119,30 +119,6 @@
 
 <p><code>Component</code>要实现接口，主要职责为<code>Endpoint</code>的生产工厂</p>
 
-<pre><code class="language-java">public interface Component {
-    Endpoint createEndpoint(String uri) throws Exception;
-    CamelContext  getCamelContext();
-    void setCamelContext(CamelContext context);
-}
-</code></pre>
-
-<h1 id="toc_0">将Component注册到CamelContext中</h1>
-
-<p>主要有两种方式：</p>
-
-<ul>
-<li><p>手动注册</p>
-<pre><code class="language-java">CamelContext context = new DefaultCamelContext();
-context.addComponent(&quot;jms&quot;,<br/>
-JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
-</code></pre></li>
-<li><p>自动发现<br/>
-需要在文件<code>META-INF/services/org/ apache/camel/component</code>中指定class</p></li>
-</ul>
-
-<p><code>class=org.apache.camel.component.bean.BeanComponent</code></p>
-
-<p><img src="media/15610881141937/15610884448436.jpg" alt=""/></p>
 
                         
                       </div>
@@ -150,7 +126,7 @@ JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                  
+                   <a href="15610881141937.html">Read more</a>&nbsp;&nbsp; 
                     <span class="date">2019/6/21</span>
                     <span>posted in&nbsp;</span> 
           				  

@@ -132,6 +132,8 @@
 
 <p><code>Component</code>要实现接口，主要职责为<code>Endpoint</code>的生产工厂</p>
 
+<span id="more"></span><!-- more -->
+
 <pre><code class="language-java">public interface Component {
     Endpoint createEndpoint(String uri) throws Exception;
     CamelContext  getCamelContext();
