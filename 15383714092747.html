@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Camel中的数据类型转换 - lazyfighter.com
+  组件的之间的继承关系 - lazyfighter.com
   
   </title>
   
@@ -108,14 +108,14 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>Camel中的数据类型转换</h1>
+          <h1>组件的之间的继承关系</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2019/6/20</span>
+          <span class="date">2018/10/1</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
+              <span class="posted-in"><a href='react.html'>react</a></span>
            
          
           <span class="comments">
@@ -128,177 +128,51 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>在EIP中，每个系统基本上都有着自己的协议或者数据类型，但是如何处理系统之间的协议转换在EIP中是一个非常重要的特性，在camel中同样也是。</p>
-
-<span id="more"></span><!-- more -->
-
-<p>在camel中数据转换是一个 比较广义的话题，一共包含两种模式</p>
-
-<ul>
-<li>Data format transformation,这种模式主要是将message从一个格式转换为另外一个格式例如 csv转xml</li>
-<li>Data type transformation,这种模式主要是讲message从一个类型转换为另一种类型，例如将java.lang.String转换为javax.jms.TextMessage</li>
-</ul>
-
-<p><img src="media/15610134857901/15610138905481.jpg" alt=""/></p>
-
-<h2 id="toc_0">Camel中提供了六种基础的数据转换器</h2>
-
-<p><img src="media/15610134857901/15610141582279.jpg" alt=""/></p>
-
-<p>不过在camel中提供了API可以允许用户进行自定义数据类型转换（java code）</p>
-
-<h2 id="toc_1">使用数据转换EIP</h2>
-
-<p>数据转换器主要是提供将消息从一个类型转换为另一种类型。</p>
-
-<p><img src="media/15610134857901/15610143617987.jpg" alt=""/></p>
-
-<p>Camel提供了三种方式：</p>
-
-<ul>
-<li>Processor</li>
-<li>Beans</li>
-<li><transform></li>
-</ul>
-
-<h3 id="toc_2">Processor方式</h3>
-
-<p>Processor方式主要是实现接口<code>org.apache.camel.Processor</code>同时它提供给你访问<code>CamelContext</code>的权限</p>
-
-<h4 id="toc_3">demo</h4>
-
-<p>目前有需要将一个HTTP接口返回的数据转换为CSV形式进行输出</p>
-
-<pre><code class="language-java">import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-public class OrderToCsvProcessor implements Processor {
-    public void process(Exchange exchange) throws Exception {
-        String custom = exchange.getIn()
-                            .getBody(String.class);
-        String id = custom.substring(0, 9);
-        String customerId = custom.substring(10, 19);
-        String date = custom.substring(20, 29);
-        String items = custom.substring(30);
-        String[] itemIds = items.split(&quot;@&quot;);
-        StringBuilder csv = new StringBuilder();
-        csv.append(id.trim());
-        csv.append(&quot;,&quot;).append(date.trim());
-        csv.append(&quot;,&quot;).append(customerId.trim());
-        for (String item : itemIds) {
-            csv.append(&quot;,&quot;).append(item.trim());
+      <pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      var NotesList = React.createClass({
+        render: function() {
+          return (
+            &lt;ol&gt;
+              {
+                React.Children.map(this.props.children, function (child) {
+                  return &lt;li&gt;{child}&lt;/li&gt;;
+                })
+              }
+            &lt;/ol&gt;
+          );
         }
-        exchange.getIn().setBody(csv.toString());
-    }
-}
+      });
 
-from(&quot;quartz://report?cron=0+0+6+*+*+?&quot;)
-    .to(&quot;http://riders.com/orders/cmd=received&amp;date=yesterday&quot;)
-    .process(new OrderToCsvProcessor())
-    .to(&quot;file://riders/orders?fileName=report-${header.Date}.csv&quot;);
-
-</code></pre>
-
-<h3 id="toc_4">使用Beans方式</h3>
-
-<pre><code class="language-java">public class OrderToCsvBean {
-    public static String map(String custom) {
-        String id = custom.substring(0, 9);
-        String customerId = custom.substring(10, 19);
-        String date = custom.substring(20, 29);
-        String items = custom.substring(30);
-        String[] itemIds = items.split(&quot;@&quot;);
-        StringBuilder csv = new StringBuilder();
-        csv.append(id.trim());
-        csv.append(&quot;,&quot;).append(date.trim());
-        csv.append(&quot;,&quot;).append(customerId.trim());
-        for (String item : itemIds) {
-            csv.append(&quot;,&quot;).append(item.trim());
-        }
-        return csv.toString();
-    }
-}
-
-from(&quot;quartz://report?cron=0+0+6+*+*+?&quot;)
-    .to(&quot;http://riders.com/orders/cmd=received&amp;date=yesterday&quot;)
-    .bean(new OrderToCsvBean())
-    .to(&quot;file://riders/orders?fileName=report-${header.Date}.csv&quot;);
+      ReactDOM.render(
+        &lt;NotesList&gt;
+          &lt;span&gt;hello&lt;/span&gt;
+          &lt;span&gt;world&lt;/span&gt;
+        &lt;/NotesList&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
 
 
 </code></pre>
 
-<h3 id="toc_5">transform方式</h3>
+<h2 id="toc_0">解析</h2>
 
-<pre><code class="language-text">from(&quot;direct:start&quot;)
-    .transform(body().regexReplaceAll(&quot;\n&quot;, &quot;&lt;br/&gt;&quot;))
-    .to(&quot;mock:result&quot;);
+<p>Please be mindful that the value of this.props.children has three possibilities. If the component has no children node, the value is undefined; If single children node, an object; If multiple children nodes, an array. You should be careful to handle it.</p>
 
-from(&quot;direct:start&quot;)
-    .transform(new Expression() {
-public &lt;T&gt; T evaluate(Exchange exchange, Class&lt;T&gt; type) { String body = exchange.getIn().getBody(String.class); body = body.replaceAll(&quot;\n&quot;, &quot;&lt;br/&gt;&quot;);
-body = &quot;&lt;body&gt;&quot; + body + &quot;&lt;/body&gt;&quot;;
-            return (T) body;
-        }
-    })
-    .to(&quot;mock:result&quot;);
+<p><strong>注意：</strong> 请注意this.props.children如果该组件没有子组件的话那么该属性的值为undefined，如果为一个children则返回object，如果含有多个children那么返回一个数组，请注意处理方式。</p>
 
-
-</code></pre>
-
-<h2 id="toc_6">使用合成方式</h2>
-
-<p><img src="media/15610134857901/15610155501491.jpg" alt=""/></p>
-
-<p>合成方式主要是讲两个资源进行集成一种然后进行输出</p>
-
-<p>demo: 目前的需求是目前HTTP以及FTP服务上面各存储一份订单数据，我们需要进行整合输出</p>
-
-<p><img src="media/15610134857901/15610156652415.jpg" alt=""/></p>
-
-<p>在Camel中提供了两种整合方式</p>
-
-<ul>
-<li>pollEnrich 这种方式数据来源为Consumer</li>
-<li>enrich 这种方式数据来源为Producer</li>
-</ul>
-
-<p>两种方式的区别就是一个是Consumer为数据源一个是Producer作为数据源，例如<code>FileComponent</code>两种都可以但是enrich将会把数据写到文件中，pollEnrich将会从文件中读取数据，但是<code>HTTPComponent</code>只能使用enrich，将response作为数据源。</p>
-
-<p>同时在进行聚合的时候需要实现<code>org.apache.camel.processor.AggregationStrategy</code>接口来接受两个数据源然后进行合并。</p>
-
-<pre><code class="language-java">from(&quot;quartz://report?cron=0+0+6+*+*+?&quot;)
-    .to(&quot;http://riders.com/orders/cmd=received&quot;)
-    .process(new OrderToCSVProcessor())
-    .pollEnrich(&quot;ftp://riders.com/orders/?username=rider&amp;password=secret&quot;,new AggregationStrategy() {
-public Exchange aggregate(Exchange oldExchange,
-                          Exchange newExchange) {
-    if (newExchange == null) {
-        return oldExchange;
-    }
-    String http = oldExchange.getIn()
-                      .getBody(String.class);
-    String ftp = newExchange.getIn()
-                      .getBody(String.class);
-    String body = http + &quot;\n&quot; + ftp;
-    oldExchange.getIn().setBody(body);
-    return oldExchange;
-    }
-})
-.to(&quot;file://riders/orders&quot;);
-</code></pre>
-
-<p>同时<code>PollEnrich</code>会提供三个time参数来获取数据</p>
-
-<ul>
-<li>pollEnrich(timeout = -1) 一直等到数据源好了</li>
-<li>pollEnrich(timeout = 0)  直接请求没有返回NULL</li>
-<li>pollEnrich(timeout &gt; 0) 等待数据源，直到设置到超时时间</li>
-</ul>
-
-<h2 id="toc_7">类型转换</h2>
-
-<p>在Camel应用启动的时候，Camel会将所有的<code>TypeConverter</code>注册到<code>TypeConverterRegistry</code>通过<code>org.apache.camel.impl.con- verter.AnnotationTypeConverterLoader</code>扫描classpath方式，这意味着将会扫描所有的转换器</p>
-
-<p><img src="media/15610134857901/15610167806484.jpg" alt=""/></p>
+<p>react提供工具类React.Children用来进行处理该属性，直接进行遍历即可，不用在考虑这几种情况。</p>
 
 
     
@@ -309,16 +183,16 @@ public Exchange aggregate(Exchange oldExchange,
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15610187409682.html" 
-          title="Previous Post: 在Camel中使用Bean">&laquo; 在Camel中使用Bean</a>
+          <a href="15383717462675.html" 
+          title="Previous Post: PropTypes 属性">&laquo; PropTypes 属性</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="15608581912296.html" 
-          title="Next Post: Camel的应用">Camel的应用 &raquo;</a>
+          <a  href="15383709434642.html" 
+          title="Next Post: 组件">组件 &raquo;</a>
       
       </p>
         </div>

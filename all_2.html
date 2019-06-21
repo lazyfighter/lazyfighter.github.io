@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  apache-camel - lazyfighter.com
+  lazyfighter.com
   
   </title>
   
@@ -108,63 +108,44 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="15610881141937.html">
+                <a class="clearlink" href="15383706359714.html">
                 
-                  <h1>Camel中的Component</h1>
+                  <h1>数组Map方法</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>如果把Routes比作一条公路，那么<code>Component</code>就类似于公路的入口以及出口</p>
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      var names = [&#39;Alice&#39;, &#39;Emily&#39;, &#39;Kate&#39;];
 
-<p><img src="media/15610881141937/15610881830643.jpg" alt=""/></p>
-
-<p><code>Component</code>要实现接口，主要职责为<code>Endpoint</code>的生产工厂</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15610881141937.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/21</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15610187409682.html">
-                
-                  <h1>在Camel中使用Bean</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>Camel提供了调用bean的方式</p>
-
-<p>例如我们目前有这样一个Bean</p>
-
-<pre><code class="language-java">public class HelloBean {
-    public String hello(String name) {
-        return &quot;Hello &quot; + name;
-    } 
-}
+      ReactDOM.render(
+        &lt;div&gt;
+        {
+          names.map(function (name, index) {
+            return &lt;div key={index}&gt;Hello, {name}!&lt;/div&gt;
+          })
+        }
+        &lt;/div&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
 
 </code></pre>
 
+<h2 id="toc_0">map解析</h2>
+
+<p>个人感觉类似java中的数组流的map方法，遍历整个数组并对数组中的内容进行转换，看上面的代码是将原数组中所有人的名字，进行转换然后转换为div</p>
 
                         
                       </div>
@@ -172,11 +153,11 @@
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                   <a href="15610187409682.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/20</span>
+                  
+                    <span class="date">2018/10/1</span>
                     <span>posted in&nbsp;</span> 
           				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
           				   
                   </div>
                   <div class="more-right right">
@@ -190,15 +171,32 @@
               </div><!-- article -->
         
 			<div class="article">
-                <a class="clearlink" href="15610134857901.html">
+                <a class="clearlink" href="15383704138899.html">
                 
-                  <h1>Camel中的数据类型转换</h1>
+                  <h1>Hello World</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>在EIP中，每个系统基本上都有着自己的协议或者数据类型，但是如何处理系统之间的协议转换在EIP中是一个非常重要的特性，在camel中同样也是。</p>
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      ReactDOM.render(
+        &lt;h1&gt;Hello, world!&lt;/h1&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
 
+</code></pre>
 
                         
                       </div>
@@ -206,11 +204,11 @@
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                   <a href="15610134857901.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/20</span>
+                  
+                    <span class="date">2018/10/1</span>
                     <span>posted in&nbsp;</span> 
           				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
           				   
                   </div>
                   <div class="more-right right">
@@ -224,16 +222,14 @@
               </div><!-- article -->
         
 			<div class="article">
-                <a class="clearlink" href="15608581912296.html">
+                <a class="clearlink" href="15382254433742.html">
                 
-                  <h1>Camel的应用</h1>
+                  <h1>opentracing-doc</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>在本节中我们将假设为某个公司来解决现实问题。</p>
-
-<p><img src="media/15608581912296/15608582427977.jpg" alt=""/></p>
+                        	<p>OpenTracing通过提供平台无关、厂商无关的API，使得开发人员能够方便的添加（或更换）追踪系统的实现。 OpenTracing提供了用于运营支撑系统的和针对特定平台的辅助程序库。程序库的具体信息请参考详细的规范。</p>
 
 
                         
@@ -242,11 +238,11 @@
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                   <a href="15608581912296.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/18</span>
+                   <a href="15382254433742.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2018/9/29</span>
                     <span>posted in&nbsp;</span> 
           				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
+          					    <span class="posted-in"><a href='sofa-rpc.html'>sofa-rpc</a></span>
           				   
                   </div>
                   <div class="more-right right">
@@ -260,14 +256,14 @@
               </div><!-- article -->
         
 			<div class="article">
-                <a class="clearlink" href="15607549443455.html">
+                <a class="clearlink" href="15382222572445.html">
                 
-                  <h1>Camel简介</h1>
+                  <h1>sofa tracer</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>其实我的理解很简单，camel做了很多的抽象，抽象是根据schema进行的，每个资源有这个不同的schema然后对应着不同的Component，也就是对应这资源的push或者pull。配置的router类似于java的stream-api，每个router对应着processor</p>
+                        	<p>SOFA 中间件是蚂蚁金服自主研发的金融级分布式中间件，包含了构建金融级云原生架构所需的各个组件，包括微服务研发框架，RPC 框架，服务注册中心，分布式定时任务，限流/熔断框架，动态配置推送，分布式链路追踪，Metrics 监控度量，分布式高可用消息队列，分布式事务框架，分布式数据库代理层等组件，是在金融场景里锤炼出来的最佳实践。</p>
 
 
                         
@@ -276,11 +272,11 @@
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                   <a href="15607549443455.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/17</span>
+                   <a href="15382222572445.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2018/9/29</span>
                     <span>posted in&nbsp;</span> 
           				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
+          					    <span class="posted-in"><a href='sofa-rpc.html'>sofa-rpc</a></span>
           				   
                   </div>
                   <div class="more-right right">
@@ -299,7 +295,7 @@
 			<div class="row">
 			  <div class="large-6 columns">
 			  <p class="text-left" style="padding-top:25px;">
-			   
+			   <a href="all_1.html">&laquo; Prev Page</a>  
 			  </p>
 			  </div>
 			  <div class="large-6 columns">

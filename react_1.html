@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Camel中的Component - lazyfighter.com
+  react - lazyfighter.com
   
   </title>
   
@@ -99,102 +99,82 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
-  <div class="large-8 medium-8 columns">
-      <div class="markdown-body article-wrap">
-       <div class="article">
-          
-          <h1>Camel中的Component</h1>
-     
-        <div class="read-more clearfix">
-          <span class="date">2019/6/21</span>
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="15383704138899.html">
+                
+                  <h1>Hello World</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      ReactDOM.render(
+        &lt;h1&gt;Hello, world!&lt;/h1&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
 
-          <span>posted in&nbsp;</span> 
-          
-              <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-           
-         
-          <span class="comments">
-            
-
-            
-          </span>
-
-        </div>
-      </div><!-- article -->
-
-      <div class="article-content">
-      <p>如果把Routes比作一条公路，那么<code>Component</code>就类似于公路的入口以及出口</p>
-
-<p><img src="media/15610881141937/15610881830643.jpg" alt=""/></p>
-
-<p><code>Component</code>要实现接口，主要职责为<code>Endpoint</code>的生产工厂</p>
-
-<span id="more"></span><!-- more -->
-
-<pre><code class="language-java">public interface Component {
-    Endpoint createEndpoint(String uri) throws Exception;
-    CamelContext  getCamelContext();
-    void setCamelContext(CamelContext context);
-}
 </code></pre>
 
-<h1 id="toc_0">将Component注册到CamelContext中</h1>
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/10/1</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
 
-<p>主要有两种方式：</p>
-
-<ul>
-<li><p>手动注册</p>
-<pre><code class="language-java">CamelContext context = new DefaultCamelContext();
-context.addComponent(&quot;jms&quot;,<br/>
-JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
-</code></pre></li>
-<li><p>自动发现<br/>
-需要在文件<code>META-INF/services/org/ apache/camel/component</code>中指定class</p></li>
-</ul>
-
-<p><code>class=org.apache.camel.component.bean.BeanComponent</code></p>
-
-<p><img src="media/15610881141937/15610884448436.jpg" alt=""/></p>
-
-
-    
-
-      </div>
-
-      <div class="row">
-        <div class="large-6 columns">
-        <p class="text-left" style="padding:15px 0px;">
-      
-        </p>
-        </div>
-        <div class="large-6 columns">
-      <p class="text-right" style="padding:15px 0px;">
-      
-          <a  href="15610187409682.html" 
-          title="Next Post: 在Camel中使用Bean">在Camel中使用Bean &raquo;</a>
-      
-      </p>
-        </div>
-      </div>
-      <div class="comments-wrap">
-        <div class="share-comments">
-          
-
-          
-
-          
-        </div>
-      </div>
-    </div><!-- article-wrap -->
-  </div><!-- large 8 -->
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
 
 
-
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   <a href="react.html">&laquo; Prev Page</a>  
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

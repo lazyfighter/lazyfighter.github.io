@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  lazyfighter.com
+  react - lazyfighter.com
   
   </title>
   
@@ -107,55 +107,6 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
-			<div class="article">
-                <a class="clearlink" href="15603217111185.html">
-                
-                  <h1>JMH java提供的运行在jvm上面的code压测工具</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">demo</h2>
-
-<p>首先引入JMH相关jar</p>
-
-<pre><code class="language-text"> &lt;dependency&gt;
-            &lt;groupId&gt;org.openjdk.jmh&lt;/groupId&gt;
-            &lt;artifactId&gt;jmh-core&lt;/artifactId&gt;
-            &lt;version&gt;1.21&lt;/version&gt;
-&lt;/dependency&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;org.openjdk.jmh&lt;/groupId&gt;
-    &lt;artifactId&gt;jmh-generator-annprocess&lt;/artifactId&gt;
-    &lt;version&gt;1.21&lt;/version&gt;
-    &lt;scope&gt;provided&lt;/scope&gt;
-&lt;/dependency&gt;
-</code></pre>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15603217111185.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/12</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='sentinel.html'>sentinel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
 			<div class="article">
                 <a class="clearlink" href="15383728323545.html">
                 
@@ -644,18 +595,81 @@ var HelloMessage = React.createClass({
                 </div>
               </div><!-- article -->
         
+			<div class="article">
+                <a class="clearlink" href="15383706359714.html">
+                
+                  <h1>数组Map方法</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      var names = [&#39;Alice&#39;, &#39;Emily&#39;, &#39;Kate&#39;];
+
+      ReactDOM.render(
+        &lt;div&gt;
+        {
+          names.map(function (name, index) {
+            return &lt;div key={index}&gt;Hello, {name}!&lt;/div&gt;
+          })
+        }
+        &lt;/div&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+
+<h2 id="toc_0">map解析</h2>
+
+<p>个人感觉类似java中的数组流的map方法，遍历整个数组并对数组中的内容进行转换，看上面的代码是将原数组中所有人的名字，进行转换然后转换为div</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/10/1</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
               
 
 
 			<div class="row">
 			  <div class="large-6 columns">
 			  <p class="text-left" style="padding-top:25px;">
-			   <a href="all.html">&laquo; Prev Page</a>  
+			   
 			  </p>
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			 <a href="all_2.html">&raquo; Next Page</a> 
+			 <a href="react_1.html">&raquo; Next Page</a> 
 			</p>
 			  </div>
 			</div>
