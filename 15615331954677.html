@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  JMH java提供的运行在jvm上面的code压测工具 - lazyfighter.com
+  DUBBO里面的Config - lazyfighter.com
   
   </title>
   
@@ -112,14 +112,14 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>JMH java提供的运行在jvm上面的code压测工具</h1>
+          <h1>DUBBO里面的Config</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2019/6/12</span>
+          <span class="date">2019/6/26</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='sentinel.html'>sentinel</a></span>
+              <span class="posted-in"><a href='apache-dubbp.html'>apache-dubbp</a></span>
            
          
           <span class="comments">
@@ -132,147 +132,300 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">demo</h2>
+      <p>Dubbo里面的Config都继承自<code>AbstractConfig</code>类，提供类一些检查方法。</p>
 
-<p>首先引入JMH相关jar</p>
-
-<pre><code class="language-text"> &lt;dependency&gt;
-            &lt;groupId&gt;org.openjdk.jmh&lt;/groupId&gt;
-            &lt;artifactId&gt;jmh-core&lt;/artifactId&gt;
-            &lt;version&gt;1.21&lt;/version&gt;
-&lt;/dependency&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;org.openjdk.jmh&lt;/groupId&gt;
-    &lt;artifactId&gt;jmh-generator-annprocess&lt;/artifactId&gt;
-    &lt;version&gt;1.21&lt;/version&gt;
-    &lt;scope&gt;provided&lt;/scope&gt;
-&lt;/dependency&gt;
-</code></pre>
+<p><img src="media/15615331954677/15615362713863.jpg" alt=""/></p>
 
 <span id="more"></span><!-- more -->
 
-<p>简单代码</p>
+<h2 id="toc_0">ServiceConfig</h2>
 
-<pre><code class="language-java">public class test {
+<p><code>ServiceConfig</code>是对dubbo暴露接口的包装类</p>
 
-    @Benchmark
-    public static void test() {
-        Thread.sleep(1000);
-    }
+<pre><code class="language-java">private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
+    /**
+     * A {@link ProxyFactory} implementation that will generate a exported service proxy,the JavassistProxyFactory is its
+     * default implementation
+     */
+    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
-    public static void main(String[] args) throws RunnerException {
-        Options options = new OptionsBuilder()
-                .include(test.class.getCanonicalName())
-                .forks(1)
-                .build();
-        new Runner(options).run();
-    }
-}
+    /**
+     * A random port cache, the different protocols who has no port specified have different random port
+     */
+    private static final Map&lt;String, Integer&gt; RANDOM_PORT_MAP = new HashMap&lt;String, Integer&gt;();
+
+    /**
+     * A delayed exposure service timer
+     */
+    private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(&quot;DubboServiceDelayExporter&quot;, true));
+
+    /**
+     * The urls of the services exported
+     */
+    private final List&lt;URL&gt; urls = new ArrayList&lt;URL&gt;();
+
+    /**
+     * The exported services
+     */
+    private final List&lt;Exporter&lt;?&gt;&gt; exporters = new ArrayList&lt;Exporter&lt;?&gt;&gt;();
+
+    /**
+     * The interface name of the exported service
+     */
+    private String interfaceName;
+
+    /**
+     * The interface class of the exported service
+     */
+    private Class&lt;?&gt; interfaceClass;
+
+    /**
+     * The reference of the interface implementation
+     */
+    private T ref;
+
+    /**
+     * The service name
+     */
+    private String path;
+
+    /**
+     * The method configuration
+     */
+    private List&lt;MethodConfig&gt; methods;
+
+    /**
+     * The provider configuration
+     */
+    private ProviderConfig provider;
+
+    /**
+     * The providerIds
+     */
+    private String providerIds;
+
+    /**
+     * Whether the provider has been exported
+     */
+    private transient volatile boolean exported;
+
+    /**
+     * The flag whether a service has unexported ,if the method unexported is invoked, the value is true
+     */
+    private transient volatile boolean unexported;
+
+    /**
+     * whether it is a GenericService
+     */
+    private volatile String generic;
+
 </code></pre>
 
-<p>通过运行这行代码我们可以基本上看到这个方法的执行效率为0.996 ops/s也就是说，大概1秒钟执行一次，符合我们的代码编写。</p>
+<h2 id="toc_1">ApplicationConfig</h2>
 
-<p>复杂一点的例子,比较淡出的字符创拼接以及采用<code>StringBuilder</code>进行拼接</p>
+<p>我理解ApplicationConfig为共用的，是想一下我是某个Service的Owner我可能会有多个Service需要暴露给外部，这些Service实际上是共用一些东西的类似于Application中提供的属性。</p>
 
-<pre><code class="language-java">/**
- * 比较字符串直接相加和StringBuilder的效率
- *
- * @author XiongNeng
- * @version 1.0
- * @since 2018/1/7
- */
-@BenchmarkMode(Mode.Throughput)
-@Warmup(iterations = 3)
-@Measurement(iterations = 10, time = 5, timeUnit = TimeUnit.SECONDS)
-@Threads(8)
-@Fork(2)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class test {
+<pre><code class="language-java">    /**
+     * 应用名称
+     */
+    private String name;
 
-    @Benchmark
-    public void testStringAdd() {
-        String a = &quot;&quot;;
-        for (int i = 0; i &lt; 10; i++) {
-            a += i;
-        }
-        print(a);
-    }
+    /**
+     * 应用的版本
+     */
+    private String version;
 
-    @Benchmark
-    public void testStringBuilderAdd() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i &lt; 10; i++) {
-            sb.append(i);
-        }
-        print(sb.toString());
-    }
+    /**
+     * 应用的管理者
+     */
+    private String owner;
 
-    private void print(String a) {
-    }
+    /**
+     * 应用的BU
+     */
+    private String organization;
 
-    public static void main(String[] args) throws RunnerException {
-        Options options = new OptionsBuilder()
-                .include(test.class.getSimpleName())
-                .build();
-        new Runner(options).run();
-    }
-}
+    /**
+     * Architecture layer目前不清晰
+     */
+    private String architecture;
+
+    /**
+     * 应用所在的环境默认只有 dev test prod
+     */
+    private String environment;
+
+    /**
+     * Java compiler 不清晰
+     */
+    private String compiler;
+
+    /**
+     * The type of the log access 不清晰
+     */
+    private String logger;
+
+    /**
+     * Registry centers 注册中心
+     */
+    private List&lt;RegistryConfig&gt; registries;
+    private String registryIds;
+
+    /**
+     * 监控中心
+     */
+    private MonitorConfig monitor;
+
+    /**
+     * 是不是默认的配置
+     */
+    private Boolean isDefault;
+
+    /**
+     * 保存ThreadDump的路径
+     */
+    private String dumpDirectory;
+
+    /**
+     * Whether to enable qos or not
+     */
+    private Boolean qosEnable;
+
+    /**
+     * The qos port to listen
+     */
+    private Integer qosPort;
+
+    /**
+     * Should we accept foreign ip or not?
+     */
+    private Boolean qosAcceptForeignIp;
+
+    /**
+     * Customized parameters
+     */
+    private Map&lt;String, String&gt; parameters;
+
+    /**
+     * Config the shutdown.wait
+     */
+    private String shutwait;
 </code></pre>
 
-<p><img src="media/15603217111185/15603224723767.jpg" alt=""/><br/>
-主要看一下最后的输出结果，通过结果我们基本上可以看到字符串拼接StringBuilder的速度还是比较快效率大概是单纯的字符创拼接的2倍多。</p>
+<h2 id="toc_2">RegistryConfig</h2>
 
-<h2 id="toc_1">注解解释</h2>
+<p><code>RegistryConfig</code>主要为注册中心的配置信息</p>
 
-<p><code>@BenchMarkMode</code><br/>
- 基准测试类型，共包含5种</p>
+<pre><code class="language-java">  /**
+     * 注册中心地址
+     */
+    private String address;
 
-<ul>
-<li>Throughput: 整体的吞吐量，例如 “1秒内可以执行多少次调用”</li>
-<li>AverageTime: 调用的平均时间，例如 &quot;每次滴啊用平均耗时多少毫秒&quot;</li>
-<li>SampleTime: 随机取样，最后输出结果的分布，例如“99%的调用在多少毫秒内，99.99%的调用在多少毫秒内”</li>
-<li>SingleShorTime: 以上模式都是默认一次iteration是1s，唯有SingleShorTime是只运行一次，往往同时吧warmup设置0，用于测试冷启动</li>
-<li>ALL: 以上所有的</li>
-</ul>
+    /**
+     * 注册中心权限校验用户名
+     */
+    private String username;
 
-<p><code>@Warmup</code><br/>
-上面我们提到了，进行基准测试前需要进行预热。一般我们前几次进行程序测试的时候都会比较慢， 所以要让程序进行几轮预热，保证测试的准确性。其中的参数iterations也就非常好理解了，就是预热轮数。</p>
+    /**
+     * 注册中心权限校验密码
+     */
+    private String password;
 
-<p>为什么需要预热？因为 JVM 的 JIT 机制的存在，如果某个函数被调用多次之后，JVM 会尝试将其编译成为机器码从而提高执行速度。所以为了让 benchmark 的结果更加接近真实情况就需要进行预热。</p>
+    /**
+     * 注册中心的端口
+     */
+    private Integer port;
 
-<p><code>@Measurement</code><br/>
-基准测试参数</p>
+    /**
+     * 注册中心的协议
+     */
+    private String protocol;
 
-<ul>
-<li>iterations 进行测试的轮次</li>
-<li>time 每轮进行的时长</li>
-<li>timeUnit 时长单位</li>
-</ul>
+    /**
+     * Network transmission type
+     */
+    private String transporter;
 
-<p><code>@Threads</code><br/>
-每个进程中的测试线程，这个非常好理解，根据具体情况选择，一般为cpu乘以2。</p>
+    private String server;
 
-<p><code>@Fork</code><br/>
-进行 fork 的次数。如果 fork 数是2的话，则 JMH 会 fork 出两个进程来进行测试。</p>
+    private String client;
 
-<p><code>@OutputTimeUnit</code><br/>
-这个比较简单了，基准测试结果的时间类型。一般选择秒、毫秒、微秒。</p>
+    private String cluster;
 
-<p><code>@Benchmark</code><br/>
-方法级注解，表示该方法是需要进行 benchmark 的对象，用法和 JUnit 的 @Test 类似。</p>
+    /**
+     * The group the services registry in
+     */
+    private String group;
 
-<p><code>@Param</code><br/>
-属性级注解，@Param 可以用来指定某项参数的多种情况。特别适合用来测试一个函数在不同的参数输入的情况下的性能。</p>
+    private String version;
 
-<p><code>@Setup</code><br/>
-方法级注解，这个注解的作用就是我们需要在测试之前进行一些准备工作，比如对一些数据的初始化之类的。</p>
+    /**
+     * Request timeout in milliseconds for register center
+     */
+    private Integer timeout;
 
-<p><code>@TearDown</code><br/>
-方法级注解，这个注解的作用就是我们需要在测试之后进行一些结束工作，比如关闭线程池，数据库连接等的，主要用于资源的回收等。</p>
+    /**
+     * Session timeout in milliseconds for register center
+     */
+    private Integer session;
 
-<p>参考文章 <a href="https://www.xncoding.com/2018/01/07/java/jmh.html">https://www.xncoding.com/2018/01/07/java/jmh.html</a><br/>
-官方例子 <a href="https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/">https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/</a></p>
+    /**
+     * File for saving register center dynamic list
+     */
+    private String file;
+
+    /**
+     * Wait time before stop
+     */
+    private Integer wait;
+
+    /**
+     * Whether to check if register center is available when boot up
+     */
+    private Boolean check;
+
+    /**
+     * Whether to allow dynamic service to register on the register center
+     */
+    private Boolean dynamic;
+
+    /**
+     * Whether to export service on the register center
+     */
+    private Boolean register;
+
+    /**
+     * Whether allow to subscribe service on the register center
+     */
+    private Boolean subscribe;
+
+    /**
+     * The customized parameters
+     */
+    private Map&lt;String, String&gt; parameters;
+
+    /**
+     * Whether it&#39;s default
+     */
+    private Boolean isDefault;
+
+    /**
+     * Simple the registry. both useful for provider and consumer
+     *
+     * @since 2.7.0
+     */
+    private Boolean simplified;
+    /**
+     * After simplify the registry, should add some paramter individually. just for provider.
+     * &lt;p&gt;
+     * such as: extra-keys = A,b,c,d
+     *
+     * @since 2.7.0
+     */
+    private String extraKeys;
+
+</code></pre>
 
 
     
@@ -283,16 +436,16 @@ public class test {
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15603235690483.html" 
-          title="Previous Post: SPH解释">&laquo; SPH解释</a>
+          <a href="15615417791171.html" 
+          title="Previous Post: Dubbo中的自适应">&laquo; Dubbo中的自适应</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="15383728323545.html" 
-          title="Next Post: state 属性">state 属性 &raquo;</a>
+          <a  href="15615315268575.html" 
+          title="Next Post: HTTP协议导出流程">HTTP协议导出流程 &raquo;</a>
       
       </p>
         </div>

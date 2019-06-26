@@ -1,0 +1,545 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  HTTP协议导出流程 - lazyfighter.com
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="lazyfighter.com" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site: ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="https://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; lazyfighter.com</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+        
+        <li><a target="self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="spring.html">spring</a></li>
+        
+            <li><a href="apache-dubbp.html">apache-dubbp</a></li>
+        
+            <li><a href="apache-camel.html">apache-camel</a></li>
+        
+            <li><a href="sofa-rpc.html">sofa-rpc</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="sentinel.html">sentinel</a></li>
+        
+            <li><a href="react.html">react</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>HTTP协议导出流程</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2019/6/26</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='apache-dubbp.html'>apache-dubbp</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>DUBBO的HTTP协议导出主要为<code>dubbo-rcp-http</code>的类<code>HttpProtocol</code>类。</p>
+
+<span id="more"></span><!-- more -->
+
+<pre><code class="language-java">public class HttpProtocol extends AbstractProxyProtocol {
+
+    public static final int DEFAULT_PORT = 80;
+
+    private final Map&lt;String, HttpServer&gt; serverMap = new ConcurrentHashMap&lt;String, HttpServer&gt;();
+
+    private final Map&lt;String, HttpInvokerServiceExporter&gt; skeletonMap = new ConcurrentHashMap&lt;String, HttpInvokerServiceExporter&gt;();
+
+    private HttpBinder httpBinder;
+
+    public HttpProtocol() {
+        super(RemoteAccessException.class);
+    }
+
+    public void setHttpBinder(HttpBinder httpBinder) {
+        this.httpBinder = httpBinder;
+    }
+
+    @Override
+    public int getDefaultPort() {
+        return DEFAULT_PORT;
+    }
+
+    @Override
+    protected &lt;T&gt; Runnable doExport(final T impl, Class&lt;T&gt; type, URL url) throws RpcException {
+        String addr = getAddr(url);
+        HttpServer server = serverMap.get(addr);
+        if (server == null) {
+            server = httpBinder.bind(url, new InternalHandler());
+            serverMap.put(addr, server);
+        }
+        final String path = url.getAbsolutePath();
+        skeletonMap.put(path, createExporter(impl, type));
+
+        final String genericPath = path + &quot;/&quot; + GENERIC_KEY;
+
+        skeletonMap.put(genericPath, createExporter(impl, GenericService.class));
+        return new Runnable() {
+            @Override
+            public void run() {
+                skeletonMap.remove(path);
+                skeletonMap.remove(genericPath);
+            }
+        };
+    }
+
+    private &lt;T&gt; HttpInvokerServiceExporter createExporter(T impl, Class&lt;?&gt; type) {
+        final HttpInvokerServiceExporter httpServiceExporter = new HttpInvokerServiceExporter();
+        httpServiceExporter.setServiceInterface(type);
+        httpServiceExporter.setService(impl);
+        try {
+            httpServiceExporter.afterPropertiesSet();
+        } catch (Exception e) {
+            throw new RpcException(e.getMessage(), e);
+        }
+        return httpServiceExporter;
+    }
+
+    @Override
+    @SuppressWarnings(&quot;unchecked&quot;)
+    protected &lt;T&gt; T doRefer(final Class&lt;T&gt; serviceType, final URL url) throws RpcException {
+        final String generic = url.getParameter(GENERIC_KEY);
+        final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
+
+        final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
+        httpProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
+            @Override
+            public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
+                RemoteInvocation invocation;
+                /*
+                  package was renamed to &#39;org.apache.dubbo&#39; in v2.7.0, so only provider versions after v2.7.0 can
+                  recognize org.apache.xxx.HttpRemoteInvocation&#39;.
+                 */
+                if (Version.isRelease270OrHigher(url.getParameter(RELEASE_KEY))) {
+                    invocation = new HttpRemoteInvocation(methodInvocation);
+                } else {
+                    /*
+                      The customized &#39;com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation&#39; was firstly introduced
+                      in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol, see
+                      https://github.com/apache/dubbo/pull/1827. To guarantee interoperability with lower
+                      versions, we need to check if the provider is v2.6.3 or higher before sending customized
+                      HttpRemoteInvocation.
+                     */
+                    if (Version.isRelease263OrHigher(url.getParameter(DUBBO_VERSION_KEY))) {
+                        invocation = new com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation(methodInvocation);
+                    } else {
+                        invocation = new RemoteInvocation(methodInvocation);
+                    }
+                }
+                if (isGeneric) {
+                    invocation.addAttribute(GENERIC_KEY, generic);
+                }
+                return invocation;
+            }
+        });
+
+        String key = url.toIdentityString();
+        if (isGeneric) {
+            key = key + &quot;/&quot; + GENERIC_KEY;
+        }
+
+        httpProxyFactoryBean.setServiceUrl(key);
+        httpProxyFactoryBean.setServiceInterface(serviceType);
+        String client = url.getParameter(Constants.CLIENT_KEY);
+        if (StringUtils.isEmpty(client) || &quot;simple&quot;.equals(client)) {
+            SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
+                @Override
+                protected void prepareConnection(HttpURLConnection con,
+                                                 int contentLength) throws IOException {
+                    super.prepareConnection(con, contentLength);
+                    con.setReadTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
+                    con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+                }
+            };
+            httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
+        } else if (&quot;commons&quot;.equals(client)) {
+            HttpComponentsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new HttpComponentsHttpInvokerRequestExecutor();
+            httpInvokerRequestExecutor.setReadTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
+            httpInvokerRequestExecutor.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+            httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
+        } else {
+            throw new IllegalStateException(&quot;Unsupported http protocol client &quot; + client + &quot;, only supported: simple, commons&quot;);
+        }
+        httpProxyFactoryBean.afterPropertiesSet();
+        return (T) httpProxyFactoryBean.getObject();
+    }
+
+    @Override
+    protected int getErrorCode(Throwable e) {
+        if (e instanceof RemoteAccessException) {
+            e = e.getCause();
+        }
+        if (e != null) {
+            Class&lt;?&gt; cls = e.getClass();
+            if (SocketTimeoutException.class.equals(cls)) {
+                return RpcException.TIMEOUT_EXCEPTION;
+            } else if (IOException.class.isAssignableFrom(cls)) {
+                return RpcException.NETWORK_EXCEPTION;
+            } else if (ClassNotFoundException.class.isAssignableFrom(cls)) {
+                return RpcException.SERIALIZATION_EXCEPTION;
+            }
+        }
+        return super.getErrorCode(e);
+    }
+
+    private class InternalHandler implements HttpHandler {
+
+        @Override
+        public void handle(HttpServletRequest request, HttpServletResponse response)
+                throws IOException, ServletException {
+            String uri = request.getRequestURI();
+            HttpInvokerServiceExporter skeleton = skeletonMap.get(uri);
+            if (!request.getMethod().equalsIgnoreCase(&quot;POST&quot;)) {
+                response.setStatus(500);
+            } else {
+                RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+                try {
+                    skeleton.handleRequest(request, response);
+                } catch (Throwable e) {
+                    throw new ServletException(e);
+                }
+            }
+        }
+
+    }
+
+}
+
+</code></pre>
+
+<ul>
+<li><code>DEFAULT_PORT</code> 为导出的默认的端口</li>
+<li><code>serverMap</code> 记录导出的端口以及httpServer</li>
+<li><code>skeletonMap</code> 记录路径对应的导出器</li>
+<li><code>httpBinder</code> </li>
+</ul>
+
+<h2 id="toc_0">方法 doExport</h2>
+
+<ol>
+<li>首先调用<code>protected String getAddr(URL url)</code>方法通过URL获取导出的ip以及端口。</li>
+<li>在<code>serverMap</code>中查找ip以及端口是否导出如果没有导出过创建监听</li>
+<li>拿到相对路径然后创建导出器</li>
+<li>导出器采用Spring提供的RemoteHTTP包因此http调用也必须采用Spring的RouteHTTP包</li>
+<li>返回可以一个县线程可以进行反注册。</li>
+</ol>
+
+<h2 id="toc_1">方法 doRefer</h2>
+
+<p><code>doRefer</code>为DUBBO-HTTP协议的client端，主要通过Spring的RemoteHTTP包提供的类<code>HttpInvokerProxyFactoryBean</code>可以通过AOP创建一个HTTP调用类。</p>
+
+<h2 id="toc_2">InternalHandler</h2>
+
+<p>为在创建HTTP服务器的时候需要指定处理器，这里可以理解为<code>disPatchServlet</code>进行路由分发，根据请求的路径找到对应的<code>HttpInvokerServiceExporter</code>即可以调用Spring的提供的包进行处理了。</p>
+
+<h1 id="toc_3">总结</h1>
+
+<p>DUBBO的HTTP协议主要依赖Spring的RemoteHTTP包，具体的代码主要为调用Spring包的使用具体的细节还需要阅读Spring源码<a href="15614441966918.html">HttpInvokerServiceExporter</a>。</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="15615331954677.html" 
+          title="Previous Post: DUBBO里面的Config">&laquo; DUBBO里面的Config</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="15614551521203.html" 
+          title="Next Post: SpringServletContainerInitializer分析">SpringServletContainerInitializer分析 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="https://pic.wenwen.soso.com/p/20141016/20141016170205-https://pic.wenwen.soso.com/p/20141016/20141016170205-1919883500.jpg" /></div>
+            
+                <h1>lazyfighter.com</h1>
+                <div class="site-des"></div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/lazyfighter" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:178116060@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="spring.html"><strong>spring</strong></a>
+        
+            <a href="apache-dubbp.html"><strong>apache-dubbp</strong></a>
+        
+            <a href="apache-camel.html"><strong>apache-camel</strong></a>
+        
+            <a href="sofa-rpc.html"><strong>sofa-rpc</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="sentinel.html"><strong>sentinel</strong></a>
+        
+            <a href="react.html"><strong>react</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15615417791171.html">Dubbo中的自适应</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15615331954677.html">DUBBO里面的Config</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15615315268575.html">HTTP协议导出流程</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15614551521203.html">SpringServletContainerInitializer分析</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15614441966918.html">HttpInvokerServiceExporter</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    
+
+
+
+  </body>
+</html>

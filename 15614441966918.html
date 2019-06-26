@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  JMH java提供的运行在jvm上面的code压测工具 - lazyfighter.com
+  HttpInvokerServiceExporter - lazyfighter.com
   
   </title>
   
@@ -112,14 +112,14 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>JMH java提供的运行在jvm上面的code压测工具</h1>
+          <h1>HttpInvokerServiceExporter</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2019/6/12</span>
+          <span class="date">2019/6/25</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='sentinel.html'>sentinel</a></span>
+              <span class="posted-in"><a href='spring.html'>spring</a></span>
            
          
           <span class="comments">
@@ -132,147 +132,7 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">demo</h2>
-
-<p>首先引入JMH相关jar</p>
-
-<pre><code class="language-text"> &lt;dependency&gt;
-            &lt;groupId&gt;org.openjdk.jmh&lt;/groupId&gt;
-            &lt;artifactId&gt;jmh-core&lt;/artifactId&gt;
-            &lt;version&gt;1.21&lt;/version&gt;
-&lt;/dependency&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;org.openjdk.jmh&lt;/groupId&gt;
-    &lt;artifactId&gt;jmh-generator-annprocess&lt;/artifactId&gt;
-    &lt;version&gt;1.21&lt;/version&gt;
-    &lt;scope&gt;provided&lt;/scope&gt;
-&lt;/dependency&gt;
-</code></pre>
-
-<span id="more"></span><!-- more -->
-
-<p>简单代码</p>
-
-<pre><code class="language-java">public class test {
-
-    @Benchmark
-    public static void test() {
-        Thread.sleep(1000);
-    }
-
-
-    public static void main(String[] args) throws RunnerException {
-        Options options = new OptionsBuilder()
-                .include(test.class.getCanonicalName())
-                .forks(1)
-                .build();
-        new Runner(options).run();
-    }
-}
-</code></pre>
-
-<p>通过运行这行代码我们可以基本上看到这个方法的执行效率为0.996 ops/s也就是说，大概1秒钟执行一次，符合我们的代码编写。</p>
-
-<p>复杂一点的例子,比较淡出的字符创拼接以及采用<code>StringBuilder</code>进行拼接</p>
-
-<pre><code class="language-java">/**
- * 比较字符串直接相加和StringBuilder的效率
- *
- * @author XiongNeng
- * @version 1.0
- * @since 2018/1/7
- */
-@BenchmarkMode(Mode.Throughput)
-@Warmup(iterations = 3)
-@Measurement(iterations = 10, time = 5, timeUnit = TimeUnit.SECONDS)
-@Threads(8)
-@Fork(2)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class test {
-
-    @Benchmark
-    public void testStringAdd() {
-        String a = &quot;&quot;;
-        for (int i = 0; i &lt; 10; i++) {
-            a += i;
-        }
-        print(a);
-    }
-
-    @Benchmark
-    public void testStringBuilderAdd() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i &lt; 10; i++) {
-            sb.append(i);
-        }
-        print(sb.toString());
-    }
-
-    private void print(String a) {
-    }
-
-    public static void main(String[] args) throws RunnerException {
-        Options options = new OptionsBuilder()
-                .include(test.class.getSimpleName())
-                .build();
-        new Runner(options).run();
-    }
-}
-</code></pre>
-
-<p><img src="media/15603217111185/15603224723767.jpg" alt=""/><br/>
-主要看一下最后的输出结果，通过结果我们基本上可以看到字符串拼接StringBuilder的速度还是比较快效率大概是单纯的字符创拼接的2倍多。</p>
-
-<h2 id="toc_1">注解解释</h2>
-
-<p><code>@BenchMarkMode</code><br/>
- 基准测试类型，共包含5种</p>
-
-<ul>
-<li>Throughput: 整体的吞吐量，例如 “1秒内可以执行多少次调用”</li>
-<li>AverageTime: 调用的平均时间，例如 &quot;每次滴啊用平均耗时多少毫秒&quot;</li>
-<li>SampleTime: 随机取样，最后输出结果的分布，例如“99%的调用在多少毫秒内，99.99%的调用在多少毫秒内”</li>
-<li>SingleShorTime: 以上模式都是默认一次iteration是1s，唯有SingleShorTime是只运行一次，往往同时吧warmup设置0，用于测试冷启动</li>
-<li>ALL: 以上所有的</li>
-</ul>
-
-<p><code>@Warmup</code><br/>
-上面我们提到了，进行基准测试前需要进行预热。一般我们前几次进行程序测试的时候都会比较慢， 所以要让程序进行几轮预热，保证测试的准确性。其中的参数iterations也就非常好理解了，就是预热轮数。</p>
-
-<p>为什么需要预热？因为 JVM 的 JIT 机制的存在，如果某个函数被调用多次之后，JVM 会尝试将其编译成为机器码从而提高执行速度。所以为了让 benchmark 的结果更加接近真实情况就需要进行预热。</p>
-
-<p><code>@Measurement</code><br/>
-基准测试参数</p>
-
-<ul>
-<li>iterations 进行测试的轮次</li>
-<li>time 每轮进行的时长</li>
-<li>timeUnit 时长单位</li>
-</ul>
-
-<p><code>@Threads</code><br/>
-每个进程中的测试线程，这个非常好理解，根据具体情况选择，一般为cpu乘以2。</p>
-
-<p><code>@Fork</code><br/>
-进行 fork 的次数。如果 fork 数是2的话，则 JMH 会 fork 出两个进程来进行测试。</p>
-
-<p><code>@OutputTimeUnit</code><br/>
-这个比较简单了，基准测试结果的时间类型。一般选择秒、毫秒、微秒。</p>
-
-<p><code>@Benchmark</code><br/>
-方法级注解，表示该方法是需要进行 benchmark 的对象，用法和 JUnit 的 @Test 类似。</p>
-
-<p><code>@Param</code><br/>
-属性级注解，@Param 可以用来指定某项参数的多种情况。特别适合用来测试一个函数在不同的参数输入的情况下的性能。</p>
-
-<p><code>@Setup</code><br/>
-方法级注解，这个注解的作用就是我们需要在测试之前进行一些准备工作，比如对一些数据的初始化之类的。</p>
-
-<p><code>@TearDown</code><br/>
-方法级注解，这个注解的作用就是我们需要在测试之后进行一些结束工作，比如关闭线程池，数据库连接等的，主要用于资源的回收等。</p>
-
-<p>参考文章 <a href="https://www.xncoding.com/2018/01/07/java/jmh.html">https://www.xncoding.com/2018/01/07/java/jmh.html</a><br/>
-官方例子 <a href="https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/">https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/</a></p>
+      <p>TODO 分析</p>
 
 
     
@@ -283,16 +143,16 @@ public class test {
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15603235690483.html" 
-          title="Previous Post: SPH解释">&laquo; SPH解释</a>
+          <a href="15614551521203.html" 
+          title="Previous Post: SpringServletContainerInitializer分析">&laquo; SpringServletContainerInitializer分析</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="15383728323545.html" 
-          title="Next Post: state 属性">state 属性 &raquo;</a>
+          <a  href="15613519700137.html" 
+          title="Next Post: "> &raquo;</a>
       
       </p>
         </div>

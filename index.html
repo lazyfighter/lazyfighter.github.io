@@ -77,6 +77,10 @@
     <li><label>Categories</label></li>
 
         
+            <li><a href="spring.html">spring</a></li>
+        
+            <li><a href="apache-dubbp.html">apache-dubbp</a></li>
+        
             <li><a href="apache-camel.html">apache-camel</a></li>
         
             <li><a href="sofa-rpc.html">sofa-rpc</a></li>
@@ -107,6 +111,842 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="15615417791171.html">
+                
+                  <h1>Dubbo中的自适应</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>Dubbo中的自适应主要有两个功能指定一个默认的扩展，另一个是根据用户的协议或者参数去自适应找到相应的扩展。</p>
+
+<p>具体的代码</p>
+
+<pre><code class="language-java">public class ServiceConfig&lt;T&gt; extends AbstractServiceConfig {
+
+    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    ...   
+}
+</code></pre>
+
+<p>在<code>ServiceConfig</code>中有一段这样的逻辑的，在用户需要将服务导出构建config的时候<code>ServiceConfig</code>会根据用户的协议找到适应的协议方便之后导出。</p>
+
+<h2 id="toc_0">实现原理</h2>
+
+<h3 id="toc_1">获取扩展加载器</h3>
+
+<p>首先，第一步是获取<code>Protocol.class</code>到具体的扩展加载器。</p>
+
+<p>获取扩展加载器方法比较简单只是对传入的扩展具体接口做了一些安全校验</p>
+
+<ul>
+<li>不能为空</li>
+<li>必须是接口</li>
+<li>必须有<code>SPI</code>的注解代表这是Dubbo中的一个扩展点</li>
+</ul>
+
+<p>然后从<code>EXTENSION_LOADERS</code>中获取具体的扩展加载器，<code>EXTENSION_LOADERS</code>是一个静态属性按照类型缓冲者所有的扩展加载器<code>private static final ConcurrentMap&lt;Class&lt;?&gt;, ExtensionLoader&lt;?&gt;&gt; EXTENSION_LOADERS = new ConcurrentHashMap&lt;&gt;();</code><br/>
+如果缓冲中没有就会新建扩展加载器。</p>
+
+<pre><code class="language-java">public static &lt;T&gt; ExtensionLoader&lt;T&gt; getExtensionLoader(Class&lt;T&gt; type) {
+        if (type == null) {
+            throw new IllegalArgumentException(&quot;Extension type == null&quot;);
+        }
+        if (!type.isInterface()) {
+            throw new IllegalArgumentException(&quot;Extension type (&quot; + type + &quot;) is not an interface!&quot;);
+        }
+        if (!withExtensionAnnotation(type)) {
+            throw new IllegalArgumentException(&quot;Extension type (&quot; + type +
+                    &quot;) is not an extension, because it is NOT annotated with @&quot; + SPI.class.getSimpleName() + &quot;!&quot;);
+        }
+
+        ExtensionLoader&lt;T&gt; loader = (ExtensionLoader&lt;T&gt;) EXTENSION_LOADERS.get(type);
+        if (loader == null) {
+            EXTENSION_LOADERS.putIfAbsent(type, new ExtensionLoader&lt;T&gt;(type));
+            loader = (ExtensionLoader&lt;T&gt;) EXTENSION_LOADERS.get(type);
+        }
+        return loader;
+    }
+</code></pre>
+
+<h3 id="toc_2">获取自适应扩展</h3>
+
+<p>第二步，从缓存中获取自适应的扩展，自适应扩展会在<code>ExtensionLoader</code>中进行缓存<code>private final Holder&lt;Object&gt; cachedAdaptiveInstance = new Holder&lt;&gt;();</code>，然后检查创建自适应扩展的时候是否有异常，如果检查通过责进行创建自适应扩展器，同时缓存在<code>cachedAdaptiveInstance</code>中，如果在创建过程中有异常则将异常信心存储到<code>createAdaptiveInstanceError</code>中。</p>
+
+<pre><code class="language-java">public T getAdaptiveExtension() {
+        Object instance = cachedAdaptiveInstance.get();
+        if (instance == null) {
+            if (createAdaptiveInstanceError == null) {
+                synchronized (cachedAdaptiveInstance) {
+                    instance = cachedAdaptiveInstance.get();
+                    if (instance == null) {
+                        try {
+                            instance = createAdaptiveExtension();
+                            cachedAdaptiveInstance.set(instance);
+                        } catch (Throwable t) {
+                            createAdaptiveInstanceError = t;
+                            throw new IllegalStateException(&quot;Failed to create adaptive instance: &quot; + t.toString(), t);
+                        }
+                    }
+                }
+            } else {
+                throw new IllegalStateException(&quot;Failed to create adaptive instance: &quot; + createAdaptiveInstanceError.toString(), createAdaptiveInstanceError);
+            }
+        }
+
+        return (T) instance;
+    }
+</code></pre>
+
+<h3 id="toc_3">创建自适应扩展</h3>
+
+<p>如果缓存中没有自适应扩展器那么就会新建。</p>
+
+<pre><code class="language-java">private T createAdaptiveExtension() {
+        try {
+            return injectExtension((T) getAdaptiveExtensionClass().newInstance());
+        } catch (Exception e) {
+            throw new IllegalStateException(&quot;Can&#39;t create adaptive extension &quot; + type + &quot;, cause: &quot; + e.getMessage(), e);
+        }
+    }
+
+ private Class&lt;?&gt; getAdaptiveExtensionClass() {
+        getExtensionClasses();
+        if (cachedAdaptiveClass != null) {
+            return cachedAdaptiveClass;
+        }
+        return cachedAdaptiveClass = createAdaptiveExtensionClass();
+    }
+
+private Map&lt;String, Class&lt;?&gt;&gt; getExtensionClasses() {
+        Map&lt;String, Class&lt;?&gt;&gt; classes = cachedClasses.get();
+        if (classes == null) {
+            synchronized (cachedClasses) {
+                classes = cachedClasses.get();
+                if (classes == null) {
+                    classes = loadExtensionClasses();
+                    cachedClasses.set(classes);
+                }
+            }
+        }
+        return classes;
+    }
+    
+    private Map&lt;String, Class&lt;?&gt;&gt; loadExtensionClasses() {
+        cacheDefaultExtensionName();
+
+        Map&lt;String, Class&lt;?&gt;&gt; extensionClasses = new HashMap&lt;&gt;();
+        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName().replace(&quot;org.apache&quot;, &quot;com.alibaba&quot;));
+        loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName().replace(&quot;org.apache&quot;, &quot;com.alibaba&quot;));
+        loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName().replace(&quot;org.apache&quot;, &quot;com.alibaba&quot;));
+        return extensionClasses;
+    }
+    private void loadDirectory(Map&lt;String, Class&lt;?&gt;&gt; extensionClasses, String dir, String type) {
+        String fileName = dir + type;
+        try {
+            Enumeration&lt;java.net.URL&gt; urls;
+            ClassLoader classLoader = findClassLoader();
+            if (classLoader != null) {
+                urls = classLoader.getResources(fileName);
+            } else {
+                urls = ClassLoader.getSystemResources(fileName);
+            }
+            if (urls != null) {
+                while (urls.hasMoreElements()) {
+                    java.net.URL resourceURL = urls.nextElement();
+                    loadResource(extensionClasses, classLoader, resourceURL);
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(&quot;Exception occurred when loading extension class (interface: &quot; +
+                    type + &quot;, description file: &quot; + fileName + &quot;).&quot;, t);
+        }
+    }
+
+    private void loadResource(Map&lt;String, Class&lt;?&gt;&gt; extensionClasses, ClassLoader classLoader, java.net.URL resourceURL) {
+        try {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    final int ci = line.indexOf(&#39;#&#39;);
+                    if (ci &gt;= 0) {
+                        line = line.substring(0, ci);
+                    }
+                    line = line.trim();
+                    if (line.length() &gt; 0) {
+                        try {
+                            String name = null;
+                            int i = line.indexOf(&#39;=&#39;);
+                            if (i &gt; 0) {
+                                name = line.substring(0, i).trim();
+                                line = line.substring(i + 1).trim();
+                            }
+                            if (line.length() &gt; 0) {
+                                loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
+                            }
+                        } catch (Throwable t) {
+                            IllegalStateException e = new IllegalStateException(&quot;Failed to load extension class (interface: &quot; + type + &quot;, class line: &quot; + line + &quot;) in &quot; + resourceURL + &quot;, cause: &quot; + t.getMessage(), t);
+                            exceptions.put(line, e);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(&quot;Exception occurred when loading extension class (interface: &quot; +
+                    type + &quot;, class file: &quot; + resourceURL + &quot;) in &quot; + resourceURL, t);
+        }
+    }
+</code></pre>
+
+<p>此处需要注意的是，在创建自适应扩展的时候，会首先读取classpath下面对应相关类的扩展，例如我们讨论的<code>Protocol</code>我们会将所有的<code>Protocol</code>的扩展加载到jvm中，如果在SPI文件中存在以<code>Adaptive</code>开头的表示这个类即为自适应的扩展类，如果不存在调用</p>
+
+<pre><code class="language-java">private Class&lt;?&gt; createAdaptiveExtensionClass() {
+        String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
+        ClassLoader classLoader = findClassLoader();
+        org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
+        return compiler.compile(code, classLoader);
+    }
+</code></pre>
+
+<p>方法中存在两个参数<code>type</code>扩展的类型，<code>cachedDefaultName</code>默认扩展名字，那么这个默认扩展名称是从哪里获取的呢，可以看这里</p>
+
+<pre><code class="language-java">private void cacheDefaultExtensionName() {
+        final SPI defaultAnnotation = type.getAnnotation(SPI.class);
+        if (defaultAnnotation != null) {
+            String value = defaultAnnotation.value();
+            if ((value = value.trim()).length() &gt; 0) {
+                String[] names = NAME_SEPARATOR.split(value);
+                if (names.length &gt; 1) {
+                    throw new IllegalStateException(&quot;More than 1 default extension name on extension &quot; + type.getName()
+                            + &quot;: &quot; + Arrays.toString(names));
+                }
+                if (names.length == 1) {
+                    cachedDefaultName = names[0];
+                }
+            }
+        }
+    }
+</code></pre>
+
+<p>它的调用也是在上面加载相关类型的扩展的时候调用的，在加载之前首先拿到<code>SPI</code>注解看看有没有具体指定默认的扩展实现，在<code>Protocol</code>中默认为<code>dubbo</code>，创建默认扩展主要使用javasisit，我们来完整的看一下这个类做了哪些东西。</p>
+
+<pre><code class="language-java">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.common.extension;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+
+/**
+ * Code generator for Adaptive class
+ */
+public class AdaptiveClassCodeGenerator {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AdaptiveClassCodeGenerator.class);
+
+    private static final String CLASSNAME_INVOCATION = &quot;org.apache.dubbo.rpc.Invocation&quot;;
+    
+    private static final String CODE_PACKAGE = &quot;package %s;\n&quot;;
+    
+    private static final String CODE_IMPORTS = &quot;import %s;\n&quot;;
+    
+    private static final String CODE_CLASS_DECLARATION = &quot;public class %s$Adaptive implements %s {\n&quot;;
+    
+    private static final String CODE_METHOD_DECLARATION = &quot;public %s %s(%s) %s {\n%s}\n&quot;;
+    
+    private static final String CODE_METHOD_ARGUMENT = &quot;%s arg%d&quot;;
+    
+    private static final String CODE_METHOD_THROWS = &quot;throws %s&quot;;
+    
+    private static final String CODE_UNSUPPORTED = &quot;throw new UnsupportedOperationException(\&quot;The method %s of interface %s is not adaptive method!\&quot;);\n&quot;;
+    
+    private static final String CODE_URL_NULL_CHECK = &quot;if (arg%d == null) throw new IllegalArgumentException(\&quot;url == null\&quot;);\n%s url = arg%d;\n&quot;;
+    
+    private static final String CODE_EXT_NAME_ASSIGNMENT = &quot;String extName = %s;\n&quot;;
+    
+    private static final String CODE_EXT_NAME_NULL_CHECK = &quot;if(extName == null) &quot;
+                    + &quot;throw new IllegalStateException(\&quot;Failed to get extension (%s) name from url (\&quot; + url.toString() + \&quot;) use keys(%s)\&quot;);\n&quot;;
+    
+    private static final String CODE_INVOCATION_ARGUMENT_NULL_CHECK = &quot;if (arg%d == null) throw new IllegalArgumentException(\&quot;invocation == null\&quot;); &quot;
+                    + &quot;String methodName = arg%d.getMethodName();\n&quot;;
+    
+    
+    private static final String CODE_EXTENSION_ASSIGNMENT = &quot;%s extension = (%&lt;s)%s.getExtensionLoader(%s.class).getExtension(extName);\n&quot;;
+    
+    private final Class&lt;?&gt; type;
+    
+    private String defaultExtName;
+    
+    public AdaptiveClassCodeGenerator(Class&lt;?&gt; type, String defaultExtName) {
+        this.type = type;
+        this.defaultExtName = defaultExtName;
+    }
+    
+    /**
+     * test if given type has at least one method annotated with &lt;code&gt;SPI&lt;/code&gt;
+     */
+    private boolean hasAdaptiveMethod() {
+        return Arrays.stream(type.getMethods()).anyMatch(m -&gt; m.isAnnotationPresent(Adaptive.class));
+    }
+    
+    /**
+     * generate and return class code
+     */
+    public String generate() {
+        // no need to generate adaptive class since there&#39;s no adaptive method found.
+        if (!hasAdaptiveMethod()) {
+            throw new IllegalStateException(&quot;No adaptive method exist on extension &quot; + type.getName() + &quot;, refuse to create the adaptive class!&quot;);
+        }
+
+        StringBuilder code = new StringBuilder();
+        code.append(generatePackageInfo());
+        code.append(generateImports());
+        code.append(generateClassDeclaration());
+        
+        Method[] methods = type.getMethods();
+        for (Method method : methods) {
+            code.append(generateMethod(method));
+        }
+        code.append(&quot;}&quot;);
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug(code.toString());
+        }
+        return code.toString();
+    }
+
+    /**
+     * generate package info
+     */
+    private String generatePackageInfo() {
+        return String.format(CODE_PACKAGE, type.getPackage().getName());
+    }
+
+    /**
+     * generate imports
+     */
+    private String generateImports() {
+        return String.format(CODE_IMPORTS, ExtensionLoader.class.getName());
+    }
+
+    /**
+     * generate class declaration
+     */
+    private String generateClassDeclaration() {
+        return String.format(CODE_CLASS_DECLARATION, type.getSimpleName(), type.getCanonicalName());
+    }
+    
+    /**
+     * generate method not annotated with Adaptive with throwing unsupported exception 
+     */
+    private String generateUnsupported(Method method) {
+        return String.format(CODE_UNSUPPORTED, method, type.getName());
+    }
+    
+    /**
+     * get index of parameter with type URL
+     */
+    private int getUrlTypeIndex(Method method) {            
+        int urlTypeIndex = -1;
+        Class&lt;?&gt;[] pts = method.getParameterTypes();
+        for (int i = 0; i &lt; pts.length; ++i) {
+            if (pts[i].equals(URL.class)) {
+                urlTypeIndex = i;
+                break;
+            }
+        }
+        return urlTypeIndex;
+    }
+    
+    /**
+     * generate method declaration
+     */
+    private String generateMethod(Method method) {
+        String methodReturnType = method.getReturnType().getCanonicalName();
+        String methodName = method.getName();
+        String methodContent = generateMethodContent(method);
+        String methodArgs = generateMethodArguments(method);
+        String methodThrows = generateMethodThrows(method);
+        return String.format(CODE_METHOD_DECLARATION, methodReturnType, methodName, methodArgs, methodThrows, methodContent);
+    }
+
+    /**
+     * generate method arguments
+     */
+    private String generateMethodArguments(Method method) {
+        Class&lt;?&gt;[] pts = method.getParameterTypes();
+        return IntStream.range(0, pts.length)
+                        .mapToObj(i -&gt; String.format(CODE_METHOD_ARGUMENT, pts[i].getCanonicalName(), i))
+                        .collect(Collectors.joining(&quot;, &quot;));
+    }
+    
+    /**
+     * generate method throws 
+     */
+    private String generateMethodThrows(Method method) {
+        Class&lt;?&gt;[] ets = method.getExceptionTypes();
+        if (ets.length &gt; 0) {
+            String list = Arrays.stream(ets).map(Class::getCanonicalName).collect(Collectors.joining(&quot;, &quot;));
+            return String.format(CODE_METHOD_THROWS, list);
+        } else {
+            return &quot;&quot;;
+        }
+    }
+    
+    /**
+     * generate method URL argument null check 
+     */
+    private String generateUrlNullCheck(int index) {
+        return String.format(CODE_URL_NULL_CHECK, index, URL.class.getName(), index);
+    }
+    
+    /**
+     * generate method content
+     */
+    private String generateMethodContent(Method method) {
+        Adaptive adaptiveAnnotation = method.getAnnotation(Adaptive.class);
+        StringBuilder code = new StringBuilder(512);
+        if (adaptiveAnnotation == null) {
+            return generateUnsupported(method);
+        } else {
+            int urlTypeIndex = getUrlTypeIndex(method);
+            
+            // found parameter in URL type
+            if (urlTypeIndex != -1) {
+                // Null Point check
+                code.append(generateUrlNullCheck(urlTypeIndex));
+            } else {
+                // did not find parameter in URL type
+                code.append(generateUrlAssignmentIndirectly(method));
+            }
+
+            String[] value = getMethodAdaptiveValue(adaptiveAnnotation);
+
+            boolean hasInvocation = hasInvocationArgument(method);
+            
+            code.append(generateInvocationArgumentNullCheck(method));
+            
+            code.append(generateExtNameAssignment(value, hasInvocation));
+            // check extName == null?
+            code.append(generateExtNameNullCheck(value));
+            
+            code.append(generateExtensionAssignment());
+
+            // return statement
+            code.append(generateReturnAndInvocation(method));
+        }
+        
+        return code.toString();
+    }
+
+    /**
+     * generate code for variable extName null check
+     */
+    private String generateExtNameNullCheck(String[] value) {
+        return String.format(CODE_EXT_NAME_NULL_CHECK, type.getName(), Arrays.toString(value));
+    }
+
+    /**
+     * generate extName assigment code
+     */
+    private String generateExtNameAssignment(String[] value, boolean hasInvocation) {
+        // TODO: refactor it
+        String getNameCode = null;
+        for (int i = value.length - 1; i &gt;= 0; --i) {
+            if (i == value.length - 1) {
+                if (null != defaultExtName) {
+                    if (!&quot;protocol&quot;.equals(value[i])) {
+                        if (hasInvocation) {
+                            getNameCode = String.format(&quot;url.getMethodParameter(methodName, \&quot;%s\&quot;, \&quot;%s\&quot;)&quot;, value[i], defaultExtName);
+                        } else {
+                            getNameCode = String.format(&quot;url.getParameter(\&quot;%s\&quot;, \&quot;%s\&quot;)&quot;, value[i], defaultExtName);
+                        }
+                    } else {
+                        getNameCode = String.format(&quot;( url.getProtocol() == null ? \&quot;%s\&quot; : url.getProtocol() )&quot;, defaultExtName);
+                    }
+                } else {
+                    if (!&quot;protocol&quot;.equals(value[i])) {
+                        if (hasInvocation) {
+                            getNameCode = String.format(&quot;url.getMethodParameter(methodName, \&quot;%s\&quot;, \&quot;%s\&quot;)&quot;, value[i], defaultExtName);
+                        } else {
+                            getNameCode = String.format(&quot;url.getParameter(\&quot;%s\&quot;)&quot;, value[i]);
+                        }
+                    } else {
+                        getNameCode = &quot;url.getProtocol()&quot;;
+                    }
+                }
+            } else {
+                if (!&quot;protocol&quot;.equals(value[i])) {
+                    if (hasInvocation) {
+                        getNameCode = String.format(&quot;url.getMethodParameter(methodName, \&quot;%s\&quot;, \&quot;%s\&quot;)&quot;, value[i], defaultExtName);
+                    } else {
+                        getNameCode = String.format(&quot;url.getParameter(\&quot;%s\&quot;, %s)&quot;, value[i], getNameCode);
+                    }
+                } else {
+                    getNameCode = String.format(&quot;url.getProtocol() == null ? (%s) : url.getProtocol()&quot;, getNameCode);
+                }
+            }
+        }
+        
+        return String.format(CODE_EXT_NAME_ASSIGNMENT, getNameCode);
+    }
+
+    /**
+     * @return
+     */
+    private String generateExtensionAssignment() {
+        return String.format(CODE_EXTENSION_ASSIGNMENT, type.getName(), ExtensionLoader.class.getSimpleName(), type.getName());
+    }
+
+    /**
+     * generate method invocation statement and return it if necessary
+     */
+    private String generateReturnAndInvocation(Method method) {
+        String returnStatement = method.getReturnType().equals(void.class) ? &quot;&quot; : &quot;return &quot;;
+        
+        String args = Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(&quot;, &quot;));
+
+        return returnStatement + String.format(&quot;extension.%s(%s);\n&quot;, method.getName(), args);
+    }
+    
+    /**
+     * test if method has argument of type &lt;code&gt;Invocation&lt;/code&gt;
+     */
+    private boolean hasInvocationArgument(Method method) {
+        Class&lt;?&gt;[] pts = method.getParameterTypes();
+        return Arrays.stream(pts).anyMatch(p -&gt; CLASSNAME_INVOCATION.equals(p.getName()));
+    }
+    
+    /**
+     * generate code to test argument of type &lt;code&gt;Invocation&lt;/code&gt; is null
+     */
+    private String generateInvocationArgumentNullCheck(Method method) {
+        Class&lt;?&gt;[] pts = method.getParameterTypes();
+        return IntStream.range(0, pts.length).filter(i -&gt; CLASSNAME_INVOCATION.equals(pts[i].getName()))
+                        .mapToObj(i -&gt; String.format(CODE_INVOCATION_ARGUMENT_NULL_CHECK, i, i))
+                        .findFirst().orElse(&quot;&quot;);
+    }
+
+    /**
+     * get value of adaptive annotation or if empty return splitted simple name
+     */
+    private String[] getMethodAdaptiveValue(Adaptive adaptiveAnnotation) {
+        String[] value = adaptiveAnnotation.value();
+        // value is not set, use the value generated from class name as the key
+        if (value.length == 0) {
+            String splitName = StringUtils.camelToSplitName(type.getSimpleName(), &quot;.&quot;);
+            value = new String[]{splitName};
+        }
+        return value;
+    }
+
+    /**
+     * get parameter with type &lt;code&gt;URL&lt;/code&gt; from method parameter:
+     * &lt;p&gt;
+     * test if parameter has method which returns type &lt;code&gt;URL&lt;/code&gt;
+     * &lt;p&gt;
+     * if not found, throws IllegalStateException
+     */
+    private String generateUrlAssignmentIndirectly(Method method) {
+        Class&lt;?&gt;[] pts = method.getParameterTypes();
+        
+        // find URL getter method
+        for (int i = 0; i &lt; pts.length; ++i) {
+            for (Method m : pts[i].getMethods()) {
+                String name = m.getName();
+                if ((name.startsWith(&quot;get&quot;) || name.length() &gt; 3)
+                        &amp;&amp; Modifier.isPublic(m.getModifiers())
+                        &amp;&amp; !Modifier.isStatic(m.getModifiers())
+                        &amp;&amp; m.getParameterTypes().length == 0
+                        &amp;&amp; m.getReturnType() == URL.class) {
+                    return generateGetUrlNullCheck(i, pts[i], name);
+                }
+            }
+        }
+        
+        // getter method not found, throw
+        throw new IllegalStateException(&quot;Failed to create adaptive class for interface &quot; + type.getName()
+                        + &quot;: not found url parameter or url attribute in parameters of method &quot; + method.getName());
+
+    }
+
+    /**
+     * 1, test if argi is null
+     * 2, test if argi.getXX() returns null
+     * 3, assign url with argi.getXX()
+     */
+    private String generateGetUrlNullCheck(int index, Class&lt;?&gt; type, String method) {
+        // Null point check
+        StringBuilder code = new StringBuilder();
+        code.append(String.format(&quot;if (arg%d == null) throw new IllegalArgumentException(\&quot;%s argument == null\&quot;);\n&quot;,
+                index, type.getName()));
+        code.append(String.format(&quot;if (arg%d.%s() == null) throw new IllegalArgumentException(\&quot;%s argument %s() == null\&quot;);\n&quot;,
+                index, method, type.getName(), method));
+
+        code.append(String.format(&quot;%s url = arg%d.%s();\n&quot;, URL.class.getName(), index, method));
+        return code.toString();
+    }
+    
+}
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/6/26</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-dubbp.html'>apache-dubbp</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15615331954677.html">
+                
+                  <h1>DUBBO里面的Config</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>Dubbo里面的Config都继承自<code>AbstractConfig</code>类，提供类一些检查方法。</p>
+
+<p><img src="media/15615331954677/15615362713863.jpg" alt=""/></p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15615331954677.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/26</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-dubbp.html'>apache-dubbp</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15615315268575.html">
+                
+                  <h1>HTTP协议导出流程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>DUBBO的HTTP协议导出主要为<code>dubbo-rcp-http</code>的类<code>HttpProtocol</code>类。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15615315268575.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/26</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-dubbp.html'>apache-dubbp</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15614551521203.html">
+                
+                  <h1>SpringServletContainerInitializer分析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p><code>SpringServletContainerInitializer</code>实现了接口<code>ServletContainerInitializer</code></p>
+
+<p><code>ServletContainerInitializer</code>是用来Servlet3.0上面支持的，主要目的是采用代码的方式取代<code>web.xml</code>方式，在任何的Servlet容器启动的时候将会通过SPI加载该类如果spring-web在classpath下面，通过<code>META-INF/services/javax.servlet.ServletContainerInitializer</code>进行加载，实例化此类调用<code>nStartup(java.util.Set&lt;java.lang.Class&lt;?&gt;&gt;, javax.servlet.ServletContext)</code>方法</p>
+
+<!-- more --->
+
+<p>同时web应用也可以通过web.xml中的属性<code>metadata-complete</code>来限制对Servlet的扫描，可以通过属性<code>absolute-ordering</code>来限制对<code>ServletContainerInitializer</code>的扫描，不过可以通过配置属性来扫描启用<code>SpringServletContainerInitializer</code>。</p>
+
+<pre><code class="language-text">&lt;absolute-ordering&gt;
+   &lt;name&gt;some_web_fragment&lt;/name&gt;
+   &lt;name&gt;spring_web&lt;/name&gt;
+ &lt;/absolute-ordering&gt;
+````
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/6/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='spring.html'>spring</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15614441966918.html">
+                
+                  <h1>HttpInvokerServiceExporter</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>TODO 分析</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/6/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='spring.html'>spring</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15613519700137.html">
+                
+                  <h1></h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code class="language-java">private static volatile Map&lt;ResourceWrapper, ProcessorSlotChain&gt; chainMap = new HashMap&lt;ResourceWrapper, ProcessorSlotChain&gt;();
+ProcessorSlot&lt;Object&gt; lookProcessChain(ResourceWrapper resourceWrapper) {
+        ProcessorSlotChain chain = chainMap.get(resourceWrapper);
+        if (chain == null) {
+            synchronized (LOCK) {
+                chain = chainMap.get(resourceWrapper);
+                if (chain == null) {
+                    // Entry size limit.
+                    if (chainMap.size() &gt;= Constants.MAX_SLOT_CHAIN_SIZE) {
+                        return null;
+                    }
+
+                    chain = SlotChainProvider.newSlotChain();
+                    Map&lt;ResourceWrapper, ProcessorSlotChain&gt; newMap = new HashMap&lt;ResourceWrapper, ProcessorSlotChain&gt;(
+                            chainMap.size() + 1);
+                    newMap.putAll(chainMap);
+                    newMap.put(resourceWrapper, chain);
+                    chainMap = newMap;
+                }
+            }
+        }
+        return chain;
+    }
+            
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/6/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="15610881141937.html">
                 
@@ -189,221 +1029,6 @@
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="15610134857901.html">
-                
-                  <h1>Camel中的数据类型转换</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>在EIP中，每个系统基本上都有着自己的协议或者数据类型，但是如何处理系统之间的协议转换在EIP中是一个非常重要的特性，在camel中同样也是。</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15610134857901.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/20</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15608581912296.html">
-                
-                  <h1>Camel的应用</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>在本节中我们将假设为某个公司来解决现实问题。</p>
-
-<p><img src="media/15608581912296/15608582427977.jpg" alt=""/></p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15608581912296.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/18</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15608480752996.html">
-                
-                  <h1>Java8函数式接口</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>函数式接口也称为SAM接口(Single Abstract Method interfaces)。具有如下特征</p>
-
-<ol>
-<li>一个接口</li>
-<li>接口只能有一个抽象方法，允许定义默认方法</li>
-</ol>
-
-<p>如果一个接口符合规范那么加上该注解编译器可以进行检查是否符合规范</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15608480752996.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/18</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='java.html'>java</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15607549443455.html">
-                
-                  <h1>Camel简介</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>其实我的理解很简单，camel做了很多的抽象，抽象是根据schema进行的，每个资源有这个不同的schema然后对应着不同的Component，也就是对应这资源的push或者pull。配置的router类似于java的stream-api，每个router对应着processor</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15607549443455.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/17</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15604111019339.html">
-                
-                  <h1>集群限流</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>提到集群流控，我们最初能够想到的找一个server来汇总统计总的调用量，其他的实例跟这个server进行通信来判断资源是否可用。</p>
-
-<p>另外集群流控还可以解决流量不均匀导致总体限流效果不佳的问题。假设集群中有 10 台机器，我们给每台机器设置单机限流阈值为 10 QPS，理想情况下整个集群的限流阈值就为 100 QPS。不过实际情况下流量到每台机器可能会不均匀，会导致总量没有到的情况下某些机器就开始限流。因此仅靠单机维度去限制的话会无法精确地限制总体流量。而集群流控可以精确地控制整个集群的调用总量，结合单机限流兜底，可以更好地发挥流量控制的效果。</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15604111019339.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/13</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='sentinel.html'>sentinel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15603235690483.html">
-                
-                  <h1>SPH解释</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p><code>SPH</code>为Sentinel对获取资源是否可用的抽象</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15603235690483.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/12</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='sentinel.html'>sentinel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -458,6 +1083,10 @@
 
       	<p class="cat-list">
         
+            <a href="spring.html"><strong>spring</strong></a>
+        
+            <a href="apache-dubbp.html"><strong>apache-dubbp</strong></a>
+        
             <a href="apache-camel.html"><strong>apache-camel</strong></a>
         
             <a href="sofa-rpc.html"><strong>sofa-rpc</strong></a>
@@ -483,31 +1112,31 @@
 	      
 		      
 			      <li class="post">
-			        <a href="15610881141937.html">Camel中的Component</a>
+			        <a href="15615417791171.html">Dubbo中的自适应</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15610187409682.html">在Camel中使用Bean</a>
+			        <a href="15615331954677.html">DUBBO里面的Config</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15610134857901.html">Camel中的数据类型转换</a>
+			        <a href="15615315268575.html">HTTP协议导出流程</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15608581912296.html">Camel的应用</a>
+			        <a href="15614551521203.html">SpringServletContainerInitializer分析</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15608480752996.html">Java8函数式接口</a>
+			        <a href="15614441966918.html">HttpInvokerServiceExporter</a>
 			      </li>
 		     
 		  
