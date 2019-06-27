@@ -112,63 +112,6 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="15613519700137.html">
-                
-                  <h1></h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<pre><code class="language-java">private static volatile Map&lt;ResourceWrapper, ProcessorSlotChain&gt; chainMap = new HashMap&lt;ResourceWrapper, ProcessorSlotChain&gt;();
-ProcessorSlot&lt;Object&gt; lookProcessChain(ResourceWrapper resourceWrapper) {
-        ProcessorSlotChain chain = chainMap.get(resourceWrapper);
-        if (chain == null) {
-            synchronized (LOCK) {
-                chain = chainMap.get(resourceWrapper);
-                if (chain == null) {
-                    // Entry size limit.
-                    if (chainMap.size() &gt;= Constants.MAX_SLOT_CHAIN_SIZE) {
-                        return null;
-                    }
-
-                    chain = SlotChainProvider.newSlotChain();
-                    Map&lt;ResourceWrapper, ProcessorSlotChain&gt; newMap = new HashMap&lt;ResourceWrapper, ProcessorSlotChain&gt;(
-                            chainMap.size() + 1);
-                    newMap.putAll(chainMap);
-                    newMap.put(resourceWrapper, chain);
-                    chainMap = newMap;
-                }
-            }
-        }
-        return chain;
-    }
-            
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2019/6/24</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
                 <a class="clearlink" href="15610881141937.html">
                 
                   <h1>Camel中的Component</h1>
