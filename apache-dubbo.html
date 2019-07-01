@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  组件 - lazyfighter.com
+  apache-dubbo - lazyfighter.com
   
   </title>
   
@@ -103,127 +103,181 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
-  <div class="large-8 medium-8 columns">
-      <div class="markdown-body article-wrap">
-       <div class="article">
-          
-          <h1>组件</h1>
-     
-        <div class="read-more clearfix">
-          <span class="date">2018/10/1</span>
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="15616218525138.html">
+                
+                  <h1>Dubbo服务的导出过程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>本文我们将分析下Dubbo的整体导出流体对Dubbo有一个整体流程的认识，文中会参考Dubbo官网中的内容<a href="http://dubbo.apache.org/zh-cn/docs/source_code_guide/export-service.html">服务导出</a>。</p>
 
-          <span>posted in&nbsp;</span> 
-          
-              <span class="posted-in"><a href='react.html'>react</a></span>
-           
-         
-          <span class="comments">
-            
-
-            
-          </span>
-
-        </div>
-      </div><!-- article -->
-
-      <div class="article-content">
-      <pre><code class="language-markup">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
-    &lt;script type=&quot;text/babel&quot;&gt;
-      var HelloMessage = React.createClass({
-        render: function() {
-          return &lt;h1&gt;Hello {this.props.name}&lt;/h1&gt;;
-        }
-      });
-
-      ReactDOM.render(
-        &lt;HelloMessage name=&quot;John&quot; /&gt;,
-        document.getElementById(&#39;example&#39;)
-      );
-    &lt;/script&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-
-</code></pre>
-
-<h2 id="toc_0">解析</h2>
-
-<p>React.createClass 用来创建一个组件类，需要实现render方法，返回一个组件类，我们不需要进行new进行创建类，直接使用即可，组件有可能会有属性，我们可以使用this.props进行属性的使用，在使用的过程中可直接使用属性进行赋值。</p>
-
-<p><strong>注意</strong> 组件名称的第一个字母需要大写，否则react会报错</p>
-
-<pre><code class="language-markup">// wrong
-var HelloMessage = React.createClass({
-  render: function() {
-    return &lt;h1&gt;
-      Hello {this.props.name}
-    &lt;/h1&gt;&lt;p&gt;
-      some text
-    &lt;/p&gt;;
-  }
-});
-
-// correct
-var HelloMessage = React.createClass({
-  render: function() {
-    return &lt;div&gt;
-      &lt;h1&gt;Hello {this.props.name}&lt;/h1&gt;
-      &lt;p&gt;some text&lt;/p&gt;
-    &lt;/div&gt;;
-  }
-});
-
+<pre><code class="language-java">public static void main(String[] args) throws Exception {
+        ServiceConfig&lt;DemoServiceImpl&gt; service = new ServiceConfig&lt;&gt;();
+        ApplicationConfig applicationConfig = new ApplicationConfig(&quot;dubbo-demo-api-provider&quot;);
+        applicationConfig.setRegistry(new RegistryConfig(&quot;multicast://224.5.6.7:1234&quot;));
+        service.setApplication(applicationConfig);
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+        service.export();
+        System.in.read();
+    }
 </code></pre>
 
 
-    
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15616218525138.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/27</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-dubbo.html'>apache-dubbo</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
 
-      </div>
-
-      <div class="row">
-        <div class="large-6 columns">
-        <p class="text-left" style="padding:15px 0px;">
-      
-          <a href="15383714092747.html" 
-          title="Previous Post: 组件的之间的继承关系">&laquo; 组件的之间的继承关系</a>
-      
-        </p>
-        </div>
-        <div class="large-6 columns">
-      <p class="text-right" style="padding:15px 0px;">
-      
-          <a  href="15383708631413.html" 
-          title="Next Post: 数组直接进行渲染">数组直接进行渲染 &raquo;</a>
-      
-      </p>
-        </div>
-      </div>
-      <div class="comments-wrap">
-        <div class="share-comments">
-          
-
-          
-
-          
-        </div>
-      </div>
-    </div><!-- article-wrap -->
-  </div><!-- large 8 -->
-
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15615417791171.html">
+                
+                  <h1>Dubbo中的自适应</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>Dubbo中的自适应主要有两个功能指定一个默认的扩展，另一个是根据用户的协议或者参数去自适应找到相应的扩展。</p>
 
 
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15615417791171.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/26</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-dubbo.html'>apache-dubbo</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15615331954677.html">
+                
+                  <h1>DUBBO里面的Config</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>Dubbo里面的Config都继承自<code>AbstractConfig</code>类，提供类一些检查方法。</p>
+
+<p><img src="media/15615331954677/15615362713863.jpg" alt=""/></p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15615331954677.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/26</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-dubbo.html'>apache-dubbo</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15615315268575.html">
+                
+                  <h1>HTTP协议导出流程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>DUBBO的HTTP协议导出主要为<code>dubbo-rcp-http</code>的类<code>HttpProtocol</code>类。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15615315268575.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/26</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-dubbo.html'>apache-dubbo</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

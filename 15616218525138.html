@@ -1,0 +1,615 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  Dubbo服务的导出过程 - lazyfighter.com
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="lazyfighter.com" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site: ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="https://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; lazyfighter.com</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+        
+        <li><a target="self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="spring.html">spring</a></li>
+        
+            <li><a href="apache-dubbo.html">apache-dubbo</a></li>
+        
+            <li><a href="apache-camel.html">apache-camel</a></li>
+        
+            <li><a href="sofa-rpc.html">sofa-rpc</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="sentinel.html">sentinel</a></li>
+        
+            <li><a href="react.html">react</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>Dubbo服务的导出过程</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2019/6/27</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='apache-dubbo.html'>apache-dubbo</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>本文我们将分析下Dubbo的整体导出流体对Dubbo有一个整体流程的认识，文中会参考Dubbo官网中的内容<a href="http://dubbo.apache.org/zh-cn/docs/source_code_guide/export-service.html">服务导出</a>。</p>
+
+<pre><code class="language-java">public static void main(String[] args) throws Exception {
+        ServiceConfig&lt;DemoServiceImpl&gt; service = new ServiceConfig&lt;&gt;();
+        ApplicationConfig applicationConfig = new ApplicationConfig(&quot;dubbo-demo-api-provider&quot;);
+        applicationConfig.setRegistry(new RegistryConfig(&quot;multicast://224.5.6.7:1234&quot;));
+        service.setApplication(applicationConfig);
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+        service.export();
+        System.in.read();
+    }
+</code></pre>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">1. 根据全局配置完成<code>ServiceConfig</code>的属性注入</h2>
+
+<ol>
+<li>首先如果<code>ServiceConfig</code>中如果有<code>ProviderConfig</code>那么将<code>ProviderConfig</code>的数据注入到<code>ServiceConfig</code>中。</li>
+<li>如果有<code>moduleConfig</code>则将数据注入到<code>ServiceConfig</code>。</li>
+<li>如果有<code>ApplicationConfig</code>则将数据注入到<code>ServiceConfig</code>。</li>
+</ol>
+
+<p>因此我们可以理解为<code>ServiceConfig</code>实际为一个<code>Provider</code>具体的配置信息其中将会保存所有的<code>Provider</code>信息。</p>
+
+<pre><code class="language-java">private void completeCompoundConfigs() {
+        if (provider != null) {
+            if (application == null) {
+                setApplication(provider.getApplication());
+            }
+            if (module == null) {
+                setModule(provider.getModule());
+            }
+            if (registries == null) {
+                setRegistries(provider.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(provider.getMonitor());
+            }
+            if (protocols == null) {
+                setProtocols(provider.getProtocols());
+            }
+            if (configCenter == null) {
+                setConfigCenter(provider.getConfigCenter());
+            }
+        }
+        if (module != null) {
+            if (registries == null) {
+                setRegistries(module.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(module.getMonitor());
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                setRegistries(application.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(application.getMonitor());
+            }
+        }
+    }
+</code></pre>
+
+<h2 id="toc_1">2.启动ConfigCenter，然后读取配置覆盖原有配置</h2>
+
+<ul>
+<li>首先判断<code>ConfigCenter</code>是否为空，如果为空从<code>ConfigManager</code>中获取。</li>
+</ul>
+
+<p><code>ConfigCenter</code>为一个实验性的API，目前里面的数据跟<code>ServiceConfig</code>以及<code>ReferenceConfig</code>里面的配置是重合的，后续可能它会作为配置的储存中心。</p>
+
+<ul>
+<li>如果<code>ConfigCenter</code>不为空进行refresh。</li>
+<li>准备环境
+<ul>
+<li>首先校验<code>configCenter</code>参数是否正确</li>
+<li>设置<code>ConfigCenter</code>启动标志</li>
+<li>此处以<code>zookeeper</code>为例子，在创建<code>DynamicConfiguration</code>的时候会通过SPI拿到<code>ZookeeperDynamicConfigurationFactory</code>然后在对这个类中的所有的method进行迭代判断是否有<code>Setter</code>方法，如果有<code>Setter</code>方法那么进行注入</li>
+<li>注入的时候依然是通过SPI拿到注入属性的具体的接口然后开始进行加载实例化</li>
+</ul></li>
+<li>然后开始加载全局的ConfigCenter上面的dubbo.properties以及加载ConfigCenter上应用的配置信息</li>
+<li>然后对原有信息进行覆盖。</li>
+</ul>
+
+<h2 id="toc_2">3. 如果<code>Provider</code>进行创建</h2>
+
+<p>如果<code>Provider</code>不存在则进行创建，注意因为refresh调用，<code>Provider</code>也会存储一些信息。</p>
+
+<pre><code class="language-java">private void createProviderIfAbsent() {
+        if (provider != null) {
+            return;
+        }
+        setProvider(
+                ConfigManager.getInstance()
+                        .getDefaultProvider()
+                        .orElseGet(() -&gt; {
+                            ProviderConfig providerConfig = new ProviderConfig();
+                            providerConfig.refresh();
+                            return providerConfig;
+                        })
+        );
+    }
+</code></pre>
+
+<h2 id="toc_3">4. 将ProtocolId转为Protocol</h2>
+
+<h2 id="toc_4">5. 校验Application信息</h2>
+
+<p>同时这是shutdown的wait信息</p>
+
+<h2 id="toc_5">6.校验注册信息</h2>
+
+<p>首先会校验协议是否需要进行注册，如果需要则进行检查</p>
+
+<ol>
+<li>如果没有配置注册信息，则读取jvm的参数或者dubbo.properties看是否有配置</li>
+<li>将RegistryId转换为注册中心信息</li>
+<li>校验注册中心address是否合法</li>
+<li>兼容如果没有指定<code>ConfigCenter</code>同时注册中心为zookeeper那么会使用<code>registerConfig</code>创建配置中心</li>
+</ol>
+
+<h2 id="toc_6">7. 因为上一步有可能会创建<code>ConfigCenter</code> 再一次refresh</h2>
+
+<pre><code class="language-java">this.refresh();
+</code></pre>
+
+<h2 id="toc_7">8. 元数据</h2>
+
+<pre><code class="language-java">        checkMetadataReport();
+
+</code></pre>
+
+<h2 id="toc_8">9. 判断接口是否为空如果为空不再进行export</h2>
+
+<pre><code class="language-java">if (StringUtils.isEmpty(interfaceName)) {
+            throw new IllegalStateException(&quot;&lt;dubbo:service interface=\&quot;\&quot; /&gt; interface not allow null!&quot;);
+        }
+</code></pre>
+
+<h2 id="toc_9">10. 如果实现为泛化调用，那么指定接口为泛化接口同时指定泛化调用标志</h2>
+
+<pre><code class="language-java">if (ref instanceof GenericService) {
+            interfaceClass = GenericService.class;
+            if (StringUtils.isEmpty(generic)) {
+                generic = Boolean.TRUE.toString();
+            }
+</code></pre>
+
+<h2 id="toc_10">11. 如果不是泛华调用，那么将类加载到jvm中然后进行检查</h2>
+
+<p>如果在<code>ServiceConfig</code>中有指定那些method指定导出，那么校验<code>MethodConfig</code></p>
+
+<p>其实就是校验导出的类中要匹配<code>methodConfig</code>中的methodName的配置</p>
+
+<pre><code class="language-java">protected void checkInterfaceAndMethods(Class&lt;?&gt; interfaceClass, List&lt;MethodConfig&gt; methods) {
+        // interface cannot be null
+        Assert.notNull(interfaceClass, new IllegalStateException(&quot;interface not allow null!&quot;));
+
+        // to verify interfaceClass is an interface
+        if (!interfaceClass.isInterface()) {
+            throw new IllegalStateException(&quot;The interface class &quot; + interfaceClass + &quot; is not a interface!&quot;);
+        }
+        // check if methods exist in the remote service interface
+        if (CollectionUtils.isNotEmpty(methods)) {
+            for (MethodConfig methodBean : methods) {
+                methodBean.setService(interfaceClass.getName());
+                methodBean.setServiceId(this.getId());
+                methodBean.refresh();
+                String methodName = methodBean.getName();
+                if (StringUtils.isEmpty(methodName)) {
+                    throw new IllegalStateException(&quot;&lt;dubbo:method&gt; name attribute is required! Please check: &quot; +
+                            &quot;&lt;dubbo:service interface=\&quot;&quot; + interfaceClass.getName() + &quot;\&quot; ... &gt;&quot; +
+                            &quot;&lt;dubbo:method name=\&quot;\&quot; ... /&gt;&lt;/&lt;dubbo:reference&gt;&quot;);
+                }
+
+                boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -&gt; method.getName().equals(methodName));
+                if (!hasMethod) {
+                    throw new IllegalStateException(&quot;The interface &quot; + interfaceClass.getName()
+                            + &quot; not found method &quot; + methodName);
+                }
+            }
+        }
+    }
+</code></pre>
+
+<h2 id="toc_11">12.校验实现类是否符合规范</h2>
+
+<p>是否指定ref，是否实现导出的接口，如果符合规范那么将泛华调用标志置为<code>false</code></p>
+
+<pre><code class="language-java">private void checkRef() {
+        // reference should not be null, and is the implementation of the given interface
+        if (ref == null) {
+            throw new IllegalStateException(&quot;ref not allow null!&quot;);
+        }
+        if (!interfaceClass.isInstance(ref)) {
+            throw new IllegalStateException(&quot;The class &quot;
+                    + ref.getClass().getName() + &quot; unimplemented interface &quot;
+                    + interfaceClass + &quot;!&quot;);
+        }
+    }
+</code></pre>
+
+<h2 id="toc_12">13. 校验是否为local模式</h2>
+
+<h2 id="toc_13">14. 校验是否为stub模式</h2>
+
+<h2 id="toc_14">15. 校验mock</h2>
+
+<h2 id="toc_15">16. 判断是否导出过，如果导出过不再导出</h2>
+
+<h2 id="toc_16">17. 判断是否需要延迟导出，如果需要则延迟导出</h2>
+
+<pre><code class="language-java">    private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(&quot;DubboServiceDelayExporter&quot;, true));
+
+            DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
+
+</code></pre>
+
+<h2 id="toc_17">18. 调用导出方法</h2>
+
+<ul>
+<li>判断是否支持导出</li>
+<li>判断是否导出过</li>
+<li>将path（service name）设置为接口名。</li>
+</ul>
+
+<h2 id="toc_18">19. 将<code>ReistryConfig</code>转换为<code>URL</code>模式</h2>
+
+<ul>
+<li>判断注册中心是否为空</li>
+<li>遍历注册中心的config</li>
+<li>如果中心的地址为空，那么将address赋值为<code>0.0.0.0</code></li>
+<li>判断地址是否可用，不为<code>N/A</code></li>
+<li></li>
+</ul>
+
+<pre><code class="language-java">protected List&lt;URL&gt; loadRegistries(boolean provider) {
+        // check &amp;&amp; override if necessary
+        List&lt;URL&gt; registryList = new ArrayList&lt;URL&gt;();
+        if (CollectionUtils.isNotEmpty(registries)) {
+            for (RegistryConfig config : registries) {
+                String address = config.getAddress();
+                if (StringUtils.isEmpty(address)) {
+                    address = ANYHOST_VALUE;
+                }
+                if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                    Map&lt;String, String&gt; map = new HashMap&lt;String, String&gt;();
+                    appendParameters(map, application);
+                    appendParameters(map, config);
+                    map.put(PATH_KEY, RegistryService.class.getName());
+                    appendRuntimeParameters(map);
+                    if (!map.containsKey(PROTOCOL_KEY)) {
+                        map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
+                    }
+                    List&lt;URL&gt; urls = UrlUtils.parseURLs(address, map);
+
+                    for (URL url : urls) {
+                        url = URLBuilder.from(url)
+                                .addParameter(REGISTRY_KEY, url.getProtocol())
+                                .setProtocol(REGISTRY_PROTOCOL)
+                                .build();
+                        if ((provider &amp;&amp; url.getParameter(REGISTER_KEY, true))
+                                || (!provider &amp;&amp; url.getParameter(SUBSCRIBE_KEY, true))) {
+                            registryList.add(url);
+                        }
+                    }
+                }
+            }
+        }
+        return registryList;
+    }
+</code></pre>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="15615417791171.html" 
+          title="Next Post: Dubbo中的自适应">Dubbo中的自适应 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="https://pic.wenwen.soso.com/p/20141016/20141016170205-https://pic.wenwen.soso.com/p/20141016/20141016170205-1919883500.jpg" /></div>
+            
+                <h1>lazyfighter.com</h1>
+                <div class="site-des"></div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/lazyfighter" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:178116060@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="spring.html"><strong>spring</strong></a>
+        
+            <a href="apache-dubbo.html"><strong>apache-dubbo</strong></a>
+        
+            <a href="apache-camel.html"><strong>apache-camel</strong></a>
+        
+            <a href="sofa-rpc.html"><strong>sofa-rpc</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="sentinel.html"><strong>sentinel</strong></a>
+        
+            <a href="react.html"><strong>react</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15616218525138.html">Dubbo服务的导出过程</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15615417791171.html">Dubbo中的自适应</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15615331954677.html">DUBBO里面的Config</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15615315268575.html">HTTP协议导出流程</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15614551521203.html">SpringServletContainerInitializer分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    
+
+
+
+  </body>
+</html>
