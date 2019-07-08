@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  组件寻找 - lazyfighter.com
+  RocketMQ概览 - lazyfighter.com
   
   </title>
   
@@ -118,14 +118,14 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>组件寻找</h1>
+          <h1>RocketMQ概览</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2018/10/1</span>
+          <span class="date">2019/7/8</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='react.html'>react</a></span>
+              <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
            
          
           <span class="comments">
@@ -138,43 +138,55 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <pre><code class="language-markup">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
-    &lt;script type=&quot;text/babel&quot;&gt;
-var MyComponent = React.createClass({
-  handleClick: function() {
-    this.refs.myTextInput.focus();
-  },
-  render: function() {
-    return (
-      &lt;div&gt;
-        &lt;input type=&quot;text&quot; ref=&quot;myTextInput&quot; /&gt;
-        &lt;input type=&quot;button&quot; value=&quot;Focus the text input&quot; onClick={this.handleClick} /&gt;
-      &lt;/div&gt;
-    );
-  }
-});
+      <p>RocketMQ基于主体的发布订阅模式，核心功能包括: 消息发送、消息存储Broker、消息消费。</p>
 
-ReactDOM.render(
-  &lt;MyComponent /&gt;,
-  document.getElementById(&#39;example&#39;)
-);
-    &lt;/script&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
+<p><strong>自研NameServer充当注册中心</strong>，实现元数据管理(Tocpic路由信息等)，Topic路由信息无须再集群之间保持强一致，追求最终一致性，能够容忍分钟级的不一致。基于此，NameServer之间不会互相通信因此对网络的要求降低了，同时对比zk性能也有很大的提升。</p>
 
-</code></pre>
+<p><strong>高效的IO存储机制</strong>RocketMQ准求消息发送的高吞吐量，存储文件设计成文件组的概念，组内单个文件大小固定，方便内存映射机制，所有的消息存储基于顺序写，极大的提供了消息的写性能，同时兼容消息消费查找，引入消息消费队列文件和索引文件。</p>
 
-<h2 id="toc_0">解析</h2>
+<p><strong>适当将某些工作下发给RocketMQ使用者</strong>我们进场会遇到类似的问题，如何确保消息一定被消费，并且只保证消息消费一次。RocketMQ在设计实现中，只会保证消息被消费者消费但不会保证只消费一次，将不重复消费下发给使用者自行解决，因此设计起来简单高效。</p>
 
-<p>react提供属性this.refs用来寻找dom中的组件，但是组件同时要有ref属性</p>
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">RocketMQ源码结构</h2>
+
+<p><img src="media/15625659827923/15625666107663.jpg" alt=""/></p>
+
+<ul>
+<li>borker: borker模块(borker启动进程)</li>
+<li>client: 消息客户端，包含消息生产者、消息消费者相关类</li>
+<li>common: 公共包</li>
+<li>dev: 开发者信息</li>
+<li>distribution: 部署实例文件件</li>
+<li>example: RocketMQ示例代码</li>
+<li>filter: 消息过滤相关基础类</li>
+<li>filtersrv: 消息过滤服务器实现相关类(Filter启动进程)</li>
+<li>logappender:  日志相关实现类</li>
+<li>namesrv: NameServer实现相关类(NameServer启动进程)</li>
+<li>openmessaging: 消息开放标准</li>
+<li>remoting: 远程通信模块，基于netty</li>
+<li>srvutil: 服务器工具类</li>
+<li>store: 消息存储实现相关类</li>
+<li>style: checkstyle实现相关类</li>
+<li>test: 测试相关类</li>
+<li>tools: 工具类，监控命令相关实现类</li>
+</ul>
+
+<h2 id="toc_1">设计目标</h2>
+
+<ol>
+<li><strong>架构模式，采用发布订阅模式</strong>，主要组件包含: 消息发送者、消息服务器(存储消息)、消息消费、路由发现。</li>
+<li><strong>顺序消息</strong>, 严格保证消息有序</li>
+<li>消息过滤, 支持<strong>服务端客户端过滤</strong>，服务端过滤只将客户端感兴趣的消息推送给消费者，客户端过滤会有无用消息。</li>
+<li>消息存储, 消息存储有两个维度的考量，消息堆积能力以及消息存储性能，RocketMQ追求消息<strong>存储的高性能</strong>，引入内存映射机制，所有主题的消息顺序存储在一个文件中，同时为了避免消息在存储服务器中累计，引入消息文件过期机智与文件存储空间报警。</li>
+<li><strong>消息高可用</strong>, 针对Broker正常关机、Broker异常Crash、OS Crash、机器断电但是能立即回复供电的情况RocketMQ在同步刷盘的情况下可以保证不丢失消息，在异步刷盘的情况下会丢失少量消息。针对机器无法开机、磁盘设备损坏一旦发生消息将全部丢失，如果开启了异步复制机制，保证之丢失少量消息，同时后续会引入双写机制保证消息可靠性极高的场景。</li>
+<li><strong>消息消费低延迟</strong>， 保证在不发生消息堆积的时候，以长轮序模式实现准实时的消息推送模式。</li>
+<li><strong>确保消息必须被消费一次</strong>, 通过消息的ACK机制保证消息至少被消费一次，但由于ACK可能会丢失无法做到只消费一次，有重复消费的可能。</li>
+<li><strong>回溯消息</strong>， 回溯消息是指消息消费端已经消费成功的消息，由于业务要求需要重新消费RocketMQ支持按时间回溯消息，时间维度可以精确到毫秒，可以向前或者向后回溯。</li>
+<li><strong>消息堆积</strong>，RocketMQ消息存储采用磁盘文件内存映射机智，并且在物理布局上位多个大小相等的文件组成逻辑文件组，可以无限循环使用。RocketMQ消息存储文件并不是永久存储在消息服务端，而是提供了默认过期机制，默认保留3天。</li>
+<li><strong>定时消息</strong>， 支持特定延迟级别。</li>
+<li><strong>消息重试机制</strong>，消息重试是指消息在消费时，如果发送异常，消息中间件需要支持消息重新投递，RocketMQ支持消息重试机制。</li>
+</ol>
 
 
     
@@ -185,16 +197,16 @@ ReactDOM.render(
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15383728323545.html" 
-          title="Previous Post: state 属性">&laquo; state 属性</a>
+          <a href="15625684305136.html" 
+          title="Previous Post: 路由中心NameServer">&laquo; 路由中心NameServer</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="15383722422081.html" 
-          title="Next Post: 属性默认值">属性默认值 &raquo;</a>
+          <a  href="15621422737770.html" 
+          title="Next Post: 通过消息头中定义长度字段来标识消息的总长度">通过消息头中定义长度字段来标识消息的总长度 &raquo;</a>
       
       </p>
         </div>

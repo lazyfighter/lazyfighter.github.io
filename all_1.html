@@ -81,6 +81,12 @@
         
             <li><a href="apache-dubbo.html">apache-dubbo</a></li>
         
+            <li><a href="Java%E7%BC%96%E7%A8%8B%E5%8F%91%E6%94%BE%E8%AE%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0.html">Java编程发放论读书笔记</a></li>
+        
+            <li><a href="netty.html">netty</a></li>
+        
+            <li><a href="rocketmq.html">rocketmq</a></li>
+        
             <li><a href="apache-camel.html">apache-camel</a></li>
         
             <li><a href="sofa-rpc.html">sofa-rpc</a></li>
@@ -111,6 +117,201 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="15615315268575.html">
+                
+                  <h1>HTTP协议导出流程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>DUBBO的HTTP协议导出主要为<code>dubbo-rcp-http</code>的类<code>HttpProtocol</code>类。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15615315268575.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/26</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-dubbo.html'>apache-dubbo</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15614551521203.html">
+                
+                  <h1>SpringServletContainerInitializer分析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p><code>SpringServletContainerInitializer</code>实现了接口<code>ServletContainerInitializer</code></p>
+
+<p><code>ServletContainerInitializer</code>是用来Servlet3.0上面支持的，主要目的是采用代码的方式取代<code>web.xml</code>方式，在任何的Servlet容器启动的时候将会通过SPI加载该类如果spring-web在classpath下面，通过<code>META-INF/services/javax.servlet.ServletContainerInitializer</code>进行加载，实例化此类调用<code>nStartup(java.util.Set&lt;java.lang.Class&lt;?&gt;&gt;, javax.servlet.ServletContext)</code>方法</p>
+
+<!-- more --->
+
+<p>同时web应用也可以通过web.xml中的属性<code>metadata-complete</code>来限制对Servlet的扫描，可以通过属性<code>absolute-ordering</code>来限制对<code>ServletContainerInitializer</code>的扫描，不过可以通过配置属性来扫描启用<code>SpringServletContainerInitializer</code>。</p>
+
+<pre><code class="language-text">&lt;absolute-ordering&gt;
+   &lt;name&gt;some_web_fragment&lt;/name&gt;
+   &lt;name&gt;spring_web&lt;/name&gt;
+ &lt;/absolute-ordering&gt;
+````
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/6/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='spring.html'>spring</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15614441966918.html">
+                
+                  <h1>HttpInvokerServiceExporter</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>TODO 分析</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/6/25</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='spring.html'>spring</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15610881141937.html">
+                
+                  <h1>Camel中的Component</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>如果把Routes比作一条公路，那么<code>Component</code>就类似于公路的入口以及出口</p>
+
+<p><img src="media/15610881141937/15610881830643.jpg" alt=""/></p>
+
+<p><code>Component</code>要实现接口，主要职责为<code>Endpoint</code>的生产工厂</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15610881141937.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15610187409682.html">
+                
+                  <h1>在Camel中使用Bean</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>Camel提供了调用bean的方式</p>
+
+<p>例如我们目前有这样一个Bean</p>
+
+<pre><code class="language-java">public class HelloBean {
+    public String hello(String name) {
+        return &quot;Hello &quot; + name;
+    } 
+}
+
+</code></pre>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15610187409682.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/6/20</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="15610134857901.html">
                 
@@ -222,233 +423,6 @@
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="15607549443455.html">
-                
-                  <h1>Camel简介</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>其实我的理解很简单，camel做了很多的抽象，抽象是根据schema进行的，每个资源有这个不同的schema然后对应着不同的Component，也就是对应这资源的push或者pull。配置的router类似于java的stream-api，每个router对应着processor</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15607549443455.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/17</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15604111019339.html">
-                
-                  <h1>集群限流</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>提到集群流控，我们最初能够想到的找一个server来汇总统计总的调用量，其他的实例跟这个server进行通信来判断资源是否可用。</p>
-
-<p>另外集群流控还可以解决流量不均匀导致总体限流效果不佳的问题。假设集群中有 10 台机器，我们给每台机器设置单机限流阈值为 10 QPS，理想情况下整个集群的限流阈值就为 100 QPS。不过实际情况下流量到每台机器可能会不均匀，会导致总量没有到的情况下某些机器就开始限流。因此仅靠单机维度去限制的话会无法精确地限制总体流量。而集群流控可以精确地控制整个集群的调用总量，结合单机限流兜底，可以更好地发挥流量控制的效果。</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15604111019339.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/13</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='sentinel.html'>sentinel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15603235690483.html">
-                
-                  <h1>SPH解释</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p><code>SPH</code>为Sentinel对获取资源是否可用的抽象</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15603235690483.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/12</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='sentinel.html'>sentinel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15603217111185.html">
-                
-                  <h1>JMH java提供的运行在jvm上面的code压测工具</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<h2 id="toc_0">demo</h2>
-
-<p>首先引入JMH相关jar</p>
-
-<pre><code class="language-text"> &lt;dependency&gt;
-            &lt;groupId&gt;org.openjdk.jmh&lt;/groupId&gt;
-            &lt;artifactId&gt;jmh-core&lt;/artifactId&gt;
-            &lt;version&gt;1.21&lt;/version&gt;
-&lt;/dependency&gt;
-&lt;dependency&gt;
-    &lt;groupId&gt;org.openjdk.jmh&lt;/groupId&gt;
-    &lt;artifactId&gt;jmh-generator-annprocess&lt;/artifactId&gt;
-    &lt;version&gt;1.21&lt;/version&gt;
-    &lt;scope&gt;provided&lt;/scope&gt;
-&lt;/dependency&gt;
-</code></pre>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15603217111185.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/12</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='sentinel.html'>sentinel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15383728323545.html">
-                
-                  <h1>state 属性</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
-    &lt;script type=&quot;text/babel&quot;&gt;
-var LikeButton = React.createClass({
-  getInitialState: function() {
-    return {liked: false};
-  },
-    getDefaultValue: function()
-  handleClick: function(event) {
-    this.setState({liked: !this.state.liked});
-  },
-  render: function() {
-    var text = this.state.liked ? &#39;like&#39; : &#39;haven\&#39;t liked&#39;;
-    return (
-      &lt;p onClick={this.handleClick}&gt;
-        You {text} this. Click to toggle.
-      &lt;/p&gt;
-    );
-  }
-});
-
-ReactDOM.render(
-  &lt;LikeButton /&gt;,
-  document.getElementById(&#39;example&#39;)
-);
-    &lt;/script&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-
-
-</code></pre>
-
-<h2 id="toc_0">解析</h2>
-
-<p>react中认为一个组件即为一个整个state，getInitialState用来初始化state属性，this.setState()用来重新设置state属性，同时组件也会被从新进行渲染。</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2018/10/1</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='react.html'>react</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -507,6 +481,12 @@ ReactDOM.render(
         
             <a href="apache-dubbo.html"><strong>apache-dubbo</strong></a>
         
+            <a href="Java%E7%BC%96%E7%A8%8B%E5%8F%91%E6%94%BE%E8%AE%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0.html"><strong>Java编程发放论读书笔记</strong></a>
+        
+            <a href="netty.html"><strong>netty</strong></a>
+        
+            <a href="rocketmq.html"><strong>rocketmq</strong></a>
+        
             <a href="apache-camel.html"><strong>apache-camel</strong></a>
         
             <a href="sofa-rpc.html"><strong>sofa-rpc</strong></a>
@@ -532,31 +512,31 @@ ReactDOM.render(
 	      
 		      
 			      <li class="post">
-			        <a href="15616218525138.html">Dubbo服务的导出过程</a>
+			        <a href="15625738990440.html">Broker启动流程</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615417791171.html">Dubbo中的自适应</a>
+			        <a href="15625684305136.html">路由中心NameServer</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615331954677.html">DUBBO里面的Config</a>
+			        <a href="15625659827923.html">RocketMQ概览</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615315268575.html">HTTP协议导出流程</a>
+			        <a href="15621422737770.html">通过消息头中定义长度字段来标识消息的总长度</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15614551521203.html">SpringServletContainerInitializer分析</a>
+			        <a href="15620535102889.html">第1章 响应式编程总览</a>
 			      </li>
 		     
 		  

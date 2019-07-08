@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  组件寻找 - lazyfighter.com
+  Broker启动流程 - lazyfighter.com
   
   </title>
   
@@ -118,14 +118,14 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>组件寻找</h1>
+          <h1>Broker启动流程</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2018/10/1</span>
+          <span class="date">2019/7/8</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='react.html'>react</a></span>
+              <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
            
          
           <span class="comments">
@@ -138,43 +138,10 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <pre><code class="language-markup">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
-    &lt;script type=&quot;text/babel&quot;&gt;
-var MyComponent = React.createClass({
-  handleClick: function() {
-    this.refs.myTextInput.focus();
-  },
-  render: function() {
-    return (
-      &lt;div&gt;
-        &lt;input type=&quot;text&quot; ref=&quot;myTextInput&quot; /&gt;
-        &lt;input type=&quot;button&quot; value=&quot;Focus the text input&quot; onClick={this.handleClick} /&gt;
-      &lt;/div&gt;
-    );
-  }
-});
-
-ReactDOM.render(
-  &lt;MyComponent /&gt;,
-  document.getElementById(&#39;example&#39;)
-);
-    &lt;/script&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-
-</code></pre>
-
-<h2 id="toc_0">解析</h2>
-
-<p>react提供属性this.refs用来寻找dom中的组件，但是组件同时要有ref属性</p>
+      <ol>
+<li>设置默认的<code>socketSendBufferSize</code>以及<code>socketRcvBuffSize</code></li>
+<li></li>
+</ol>
 
 
     
@@ -185,16 +152,13 @@ ReactDOM.render(
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15383728323545.html" 
-          title="Previous Post: state 属性">&laquo; state 属性</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="15383722422081.html" 
-          title="Next Post: 属性默认值">属性默认值 &raquo;</a>
+          <a  href="15625684305136.html" 
+          title="Next Post: 路由中心NameServer">路由中心NameServer &raquo;</a>
       
       </p>
         </div>

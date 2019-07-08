@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  组件寻找 - lazyfighter.com
+  rocketmq - lazyfighter.com
   
   </title>
   
@@ -109,110 +109,145 @@
        
 
  <script type="text/javascript">
-  $(function(){
-    $('#menu_item_index').addClass('is_active');
-  });
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
 </script>
 <div class="row">
-  <div class="large-8 medium-8 columns">
-      <div class="markdown-body article-wrap">
-       <div class="article">
-          
-          <h1>组件寻找</h1>
-     
-        <div class="read-more clearfix">
-          <span class="date">2018/10/1</span>
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="15625738990440.html">
+                
+                  <h1>Broker启动流程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ol>
+<li>设置默认的<code>socketSendBufferSize</code>以及<code>socketRcvBuffSize</code></li>
+<li></li>
+</ol>
 
-          <span>posted in&nbsp;</span> 
-          
-              <span class="posted-in"><a href='react.html'>react</a></span>
-           
-         
-          <span class="comments">
-            
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/7/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
 
-            
-          </span>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15625684305136.html">
+                
+                  <h1>路由中心NameServer</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>NameServer是RocketMQ路由管理、服务注册以及服务发现的实现。</p>
 
-        </div>
-      </div><!-- article -->
+<p>消息中间件的实际思路一般基于订阅发布机制，消息生成者Producer发送某一主题的消息到消息服务器，消息服务器负责消息的持久化存储，消息消费者Consumer订阅感兴趣的主题，消息服务器根据客户端的订阅信息推送消息到消费者PUSH模式或者消息客户端主动向服务器拉取消息PULL模式，从而实现消息生产者和消息消费者的解耦。</p>
 
-      <div class="article-content">
-      <pre><code class="language-markup">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
-    &lt;script type=&quot;text/babel&quot;&gt;
-var MyComponent = React.createClass({
-  handleClick: function() {
-    this.refs.myTextInput.focus();
-  },
-  render: function() {
-    return (
-      &lt;div&gt;
-        &lt;input type=&quot;text&quot; ref=&quot;myTextInput&quot; /&gt;
-        &lt;input type=&quot;button&quot; value=&quot;Focus the text input&quot; onClick={this.handleClick} /&gt;
-      &lt;/div&gt;
-    );
-  }
-});
-
-ReactDOM.render(
-  &lt;MyComponent /&gt;,
-  document.getElementById(&#39;example&#39;)
-);
-    &lt;/script&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-
-</code></pre>
-
-<h2 id="toc_0">解析</h2>
-
-<p>react提供属性this.refs用来寻找dom中的组件，但是组件同时要有ref属性</p>
+<p>为了避免消息服务器宕机导致整个消息系统瘫痪，通常会部署多台服务器，那么生产者如何知道消息发送到那台服务器，如果某台消息服务器宕机如何能够被生产者感知，NameServer就是为了解决上述的问题。</p>
 
 
-    
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15625684305136.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/7/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
 
-      </div>
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15625659827923.html">
+                
+                  <h1>RocketMQ概览</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>RocketMQ基于主体的发布订阅模式，核心功能包括: 消息发送、消息存储Broker、消息消费。</p>
 
-      <div class="row">
-        <div class="large-6 columns">
-        <p class="text-left" style="padding:15px 0px;">
-      
-          <a href="15383728323545.html" 
-          title="Previous Post: state 属性">&laquo; state 属性</a>
-      
-        </p>
-        </div>
-        <div class="large-6 columns">
-      <p class="text-right" style="padding:15px 0px;">
-      
-          <a  href="15383722422081.html" 
-          title="Next Post: 属性默认值">属性默认值 &raquo;</a>
-      
-      </p>
-        </div>
-      </div>
-      <div class="comments-wrap">
-        <div class="share-comments">
-          
+<p><strong>自研NameServer充当注册中心</strong>，实现元数据管理(Tocpic路由信息等)，Topic路由信息无须再集群之间保持强一致，追求最终一致性，能够容忍分钟级的不一致。基于此，NameServer之间不会互相通信因此对网络的要求降低了，同时对比zk性能也有很大的提升。</p>
 
-          
+<p><strong>高效的IO存储机制</strong>RocketMQ准求消息发送的高吞吐量，存储文件设计成文件组的概念，组内单个文件大小固定，方便内存映射机制，所有的消息存储基于顺序写，极大的提供了消息的写性能，同时兼容消息消费查找，引入消息消费队列文件和索引文件。</p>
 
-          
-        </div>
-      </div>
-    </div><!-- article-wrap -->
-  </div><!-- large 8 -->
+<p><strong>适当将某些工作下发给RocketMQ使用者</strong>我们进场会遇到类似的问题，如何确保消息一定被消费，并且只保证消息消费一次。RocketMQ在设计实现中，只会保证消息被消费者消费但不会保证只消费一次，将不重复消费下发给使用者自行解决，因此设计起来简单高效。</p>
 
 
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15625659827923.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/7/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
 
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
 
  <div class="large-4 medium-4 columns">
   <div class="hide-for-small">

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  组件寻找 - lazyfighter.com
+  路由中心NameServer - lazyfighter.com
   
   </title>
   
@@ -118,14 +118,14 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>组件寻找</h1>
+          <h1>路由中心NameServer</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2018/10/1</span>
+          <span class="date">2019/7/8</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='react.html'>react</a></span>
+              <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
            
          
           <span class="comments">
@@ -138,43 +138,63 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <pre><code class="language-markup">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
-    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
-    &lt;script type=&quot;text/babel&quot;&gt;
-var MyComponent = React.createClass({
-  handleClick: function() {
-    this.refs.myTextInput.focus();
-  },
-  render: function() {
-    return (
-      &lt;div&gt;
-        &lt;input type=&quot;text&quot; ref=&quot;myTextInput&quot; /&gt;
-        &lt;input type=&quot;button&quot; value=&quot;Focus the text input&quot; onClick={this.handleClick} /&gt;
-      &lt;/div&gt;
-    );
-  }
-});
+      <p>NameServer是RocketMQ路由管理、服务注册以及服务发现的实现。</p>
 
-ReactDOM.render(
-  &lt;MyComponent /&gt;,
-  document.getElementById(&#39;example&#39;)
-);
-    &lt;/script&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
+<p>消息中间件的实际思路一般基于订阅发布机制，消息生成者Producer发送某一主题的消息到消息服务器，消息服务器负责消息的持久化存储，消息消费者Consumer订阅感兴趣的主题，消息服务器根据客户端的订阅信息推送消息到消费者PUSH模式或者消息客户端主动向服务器拉取消息PULL模式，从而实现消息生产者和消息消费者的解耦。</p>
 
+<p>为了避免消息服务器宕机导致整个消息系统瘫痪，通常会部署多台服务器，那么生产者如何知道消息发送到那台服务器，如果某台消息服务器宕机如何能够被生产者感知，NameServer就是为了解决上述的问题。</p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">NameServer架构设计</h2>
+
+<p>Broker消息服务器在启动的时候向所有的NameServer注册，消息生产者在发送消息之前先从NameServer获取Broker服务器地址列表，然后根据负载均衡算法选一台消息服务器进行消息发送，NameServer与每台Broker服务器保持长连接，并间隔30S检查Broker是否存活，如果检测到宕机，则从路由注册表移除，但是不会马上通知生产者，而是由发送端保证发送的高可用。</p>
+
+<p>NameServer本身的高可用是通过部署多台来实现，但是彼此之间不会进行通信。也就是某一时刻多台的NameServer的数据不会一致，但是不会对发送消息造成任何影响。</p>
+
+<h2 id="toc_1">NameServer的启动流程</h2>
+
+<ol>
+<li>根据启动参数指定的configFile，通过指定读入<code>Properties</code>中，然后通过反射调用填充<code>NameServerConfig</code>、<code>NettyServerConfig</code>属性值此处默认端口为9876.</li>
+<li>是否设置Print参数，如果设置打印填充完成后的对象中的属性，然后退出。</li>
+<li>构造<code>NamesrvController</code>, 合并配置文件，并初始化该实例</li>
+<li>加载kvconfig到内存中</li>
+<li>创建<code>NettyRemotingServer</code>网络处理对象, 构造业务线程池，同时将处理器注册到server中。</li>
+<li>启动定时任务每10s中扫描一次Broker移除不处于激活状态的Broker</li>
+<li>启动定时任务每10s中打印一次kv配置</li>
+<li>根据用户是否启用SSL配置SSL信息</li>
+<li>注册JVM钩子函数，进行优雅关闭</li>
+<li>启动SSL文件监听，启动服务器监听Broker以及消息生产者的网络请求。</li>
+</ol>
+
+<h2 id="toc_2">NameServer路由注册、故障剔除</h2>
+
+<p>NameServer主要作用是为消息生产者和消息消费者提供关于主题Topic的路由信息那么NameServer就需要能够存储路由的基础信息，还要能够管理Broker节点包含路由注册路由删除等功能。</p>
+
+<h3 id="toc_3">路由元信息</h3>
+
+<p>路由元信息具体实现类<code>org.apache.rocketmq.namesrv.routeinfo.RouteInfoManager</code>主要存储如下信息</p>
+
+<pre><code class="language-java">private final HashMap&lt;String/* topic */, List&lt;QueueData&gt;&gt; topicQueueTable;
+    private final HashMap&lt;String/* brokerName */, BrokerData&gt; brokerAddrTable;
+    private final HashMap&lt;String/* clusterName */, Set&lt;String/* brokerName */&gt;&gt; clusterAddrTable;
+    private final HashMap&lt;String/* brokerAddr */, BrokerLiveInfo&gt; brokerLiveTable;
+    private final HashMap&lt;String/* brokerAddr */, List&lt;String&gt;/* Filter Server */&gt; filterServerTable;
 </code></pre>
 
-<h2 id="toc_0">解析</h2>
+<ul>
+<li>topicQueueTable: Topic消息队列路由信息，消息发送时根据路由表进行负载均衡</li>
+<li>brokerAddrTable: Broker基础信息，包含brokerName、所属集群名称、主备Broker地址</li>
+<li>clusterAddrTable: Broker集群消息，存储集群中所有Broker名称</li>
+<li>brokerLiveTable: Broker状态信息,NameServer每次收到心跳包会替换该信息</li>
+<li>filterServerTable: Broker上的FilterServer列表，用于类模式消息过滤。</li>
+</ul>
 
-<p>react提供属性this.refs用来寻找dom中的组件，但是组件同时要有ref属性</p>
+<p>RocketMQ基于订阅发布机制，一个Topic拥有多个消息队列，一个Broker为每一主题默认创建4个读队列4个写队列。多个Broker组成一个集群，BrokerName相同的组成Master-Slave架构，brokerid为0的代表Master大于0的为Slave。</p>
+
+<h3 id="toc_4">路由注册</h3>
+
+<p>RocketMQ路由注册是通过Broker与NameServer的心跳功能实现的，Broker启动的时候向集群中所有的NameServer发送心跳语句，每隔30s向集群中所有的NameServer发送心跳包，NameServer收到Broker的心跳包就会更新brokerLiveTable缓存中的BrokerLiveInfo的lastUpdateTimestamp，然后NameServer每10s扫描brokerLiveTable,如果持续120s没有心跳包则移除Broker的路由信息同时关闭Socket连接。</p>
 
 
     
@@ -185,16 +205,16 @@ ReactDOM.render(
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15383728323545.html" 
-          title="Previous Post: state 属性">&laquo; state 属性</a>
+          <a href="15625738990440.html" 
+          title="Previous Post: Broker启动流程">&laquo; Broker启动流程</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="15383722422081.html" 
-          title="Next Post: 属性默认值">属性默认值 &raquo;</a>
+          <a  href="15625659827923.html" 
+          title="Next Post: RocketMQ概览">RocketMQ概览 &raquo;</a>
       
       </p>
         </div>

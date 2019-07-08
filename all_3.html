@@ -81,6 +81,12 @@
         
             <li><a href="apache-dubbo.html">apache-dubbo</a></li>
         
+            <li><a href="Java%E7%BC%96%E7%A8%8B%E5%8F%91%E6%94%BE%E8%AE%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0.html">Java编程发放论读书笔记</a></li>
+        
+            <li><a href="netty.html">netty</a></li>
+        
+            <li><a href="rocketmq.html">rocketmq</a></li>
+        
             <li><a href="apache-camel.html">apache-camel</a></li>
         
             <li><a href="sofa-rpc.html">sofa-rpc</a></li>
@@ -111,6 +117,342 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="15383714092747.html">
+                
+                  <h1>组件的之间的继承关系</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      var NotesList = React.createClass({
+        render: function() {
+          return (
+            &lt;ol&gt;
+              {
+                React.Children.map(this.props.children, function (child) {
+                  return &lt;li&gt;{child}&lt;/li&gt;;
+                })
+              }
+            &lt;/ol&gt;
+          );
+        }
+      });
+
+      ReactDOM.render(
+        &lt;NotesList&gt;
+          &lt;span&gt;hello&lt;/span&gt;
+          &lt;span&gt;world&lt;/span&gt;
+        &lt;/NotesList&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+
+</code></pre>
+
+<h2 id="toc_0">解析</h2>
+
+<p>Please be mindful that the value of this.props.children has three possibilities. If the component has no children node, the value is undefined; If single children node, an object; If multiple children nodes, an array. You should be careful to handle it.</p>
+
+<p><strong>注意：</strong> 请注意this.props.children如果该组件没有子组件的话那么该属性的值为undefined，如果为一个children则返回object，如果含有多个children那么返回一个数组，请注意处理方式。</p>
+
+<p>react提供工具类React.Children用来进行处理该属性，直接进行遍历即可，不用在考虑这几种情况。</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/10/1</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15383709434642.html">
+                
+                  <h1>组件</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      var HelloMessage = React.createClass({
+        render: function() {
+          return &lt;h1&gt;Hello {this.props.name}&lt;/h1&gt;;
+        }
+      });
+
+      ReactDOM.render(
+        &lt;HelloMessage name=&quot;John&quot; /&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+
+<h2 id="toc_0">解析</h2>
+
+<p>React.createClass 用来创建一个组件类，需要实现render方法，返回一个组件类，我们不需要进行new进行创建类，直接使用即可，组件有可能会有属性，我们可以使用this.props进行属性的使用，在使用的过程中可直接使用属性进行赋值。</p>
+
+<p><strong>注意</strong> 组件名称的第一个字母需要大写，否则react会报错</p>
+
+<pre><code class="language-markup">// wrong
+var HelloMessage = React.createClass({
+  render: function() {
+    return &lt;h1&gt;
+      Hello {this.props.name}
+    &lt;/h1&gt;&lt;p&gt;
+      some text
+    &lt;/p&gt;;
+  }
+});
+
+// correct
+var HelloMessage = React.createClass({
+  render: function() {
+    return &lt;div&gt;
+      &lt;h1&gt;Hello {this.props.name}&lt;/h1&gt;
+      &lt;p&gt;some text&lt;/p&gt;
+    &lt;/div&gt;;
+  }
+});
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/10/1</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15383708631413.html">
+                
+                  <h1>数组直接进行渲染</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      var arr = [
+        &lt;h1 key=&quot;1&quot;&gt;Hello world!&lt;/h1&gt;,
+        &lt;h2 key=&quot;2&quot;&gt;React is awesome&lt;/h2&gt;,
+      ];
+      ReactDOM.render(
+        &lt;div&gt;{arr}&lt;/div&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+
+<h2 id="toc_0">解析</h2>
+
+<p>看到上面的代码，是直接将数组内的东西直接进行合并渲染</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/10/1</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15383706359714.html">
+                
+                  <h1>数组Map方法</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      var names = [&#39;Alice&#39;, &#39;Emily&#39;, &#39;Kate&#39;];
+
+      ReactDOM.render(
+        &lt;div&gt;
+        {
+          names.map(function (name, index) {
+            return &lt;div key={index}&gt;Hello, {name}!&lt;/div&gt;
+          })
+        }
+        &lt;/div&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+
+<h2 id="toc_0">map解析</h2>
+
+<p>个人感觉类似java中的数组流的map方法，遍历整个数组并对数组中的内容进行转换，看上面的代码是将原数组中所有人的名字，进行转换然后转换为div</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/10/1</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15383704138899.html">
+                
+                  <h1>Hello World</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<pre><code class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;../build/react.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/react-dom.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;../build/browser.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;example&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;text/babel&quot;&gt;
+      ReactDOM.render(
+        &lt;h1&gt;Hello, world!&lt;/h1&gt;,
+        document.getElementById(&#39;example&#39;)
+      );
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/10/1</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='react.html'>react</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="15382254433742.html">
                 
@@ -237,6 +579,12 @@
         
             <a href="apache-dubbo.html"><strong>apache-dubbo</strong></a>
         
+            <a href="Java%E7%BC%96%E7%A8%8B%E5%8F%91%E6%94%BE%E8%AE%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0.html"><strong>Java编程发放论读书笔记</strong></a>
+        
+            <a href="netty.html"><strong>netty</strong></a>
+        
+            <a href="rocketmq.html"><strong>rocketmq</strong></a>
+        
             <a href="apache-camel.html"><strong>apache-camel</strong></a>
         
             <a href="sofa-rpc.html"><strong>sofa-rpc</strong></a>
@@ -262,31 +610,31 @@
 	      
 		      
 			      <li class="post">
-			        <a href="15616218525138.html">Dubbo服务的导出过程</a>
+			        <a href="15625738990440.html">Broker启动流程</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615417791171.html">Dubbo中的自适应</a>
+			        <a href="15625684305136.html">路由中心NameServer</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615331954677.html">DUBBO里面的Config</a>
+			        <a href="15625659827923.html">RocketMQ概览</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615315268575.html">HTTP协议导出流程</a>
+			        <a href="15621422737770.html">通过消息头中定义长度字段来标识消息的总长度</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15614551521203.html">SpringServletContainerInitializer分析</a>
+			        <a href="15620535102889.html">第1章 响应式编程总览</a>
 			      </li>
 		     
 		  

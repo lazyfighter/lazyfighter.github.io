@@ -81,6 +81,12 @@
         
             <li><a href="apache-dubbo.html">apache-dubbo</a></li>
         
+            <li><a href="Java%E7%BC%96%E7%A8%8B%E5%8F%91%E6%94%BE%E8%AE%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0.html">Java编程发放论读书笔记</a></li>
+        
+            <li><a href="netty.html">netty</a></li>
+        
+            <li><a href="rocketmq.html">rocketmq</a></li>
+        
             <li><a href="apache-camel.html">apache-camel</a></li>
         
             <li><a href="sofa-rpc.html">sofa-rpc</a></li>
@@ -111,6 +117,511 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="15625738990440.html">
+                
+                  <h1>Broker启动流程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ol>
+<li>设置默认的<code>socketSendBufferSize</code>以及<code>socketRcvBuffSize</code></li>
+<li></li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/7/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15625684305136.html">
+                
+                  <h1>路由中心NameServer</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>NameServer是RocketMQ路由管理、服务注册以及服务发现的实现。</p>
+
+<p>消息中间件的实际思路一般基于订阅发布机制，消息生成者Producer发送某一主题的消息到消息服务器，消息服务器负责消息的持久化存储，消息消费者Consumer订阅感兴趣的主题，消息服务器根据客户端的订阅信息推送消息到消费者PUSH模式或者消息客户端主动向服务器拉取消息PULL模式，从而实现消息生产者和消息消费者的解耦。</p>
+
+<p>为了避免消息服务器宕机导致整个消息系统瘫痪，通常会部署多台服务器，那么生产者如何知道消息发送到那台服务器，如果某台消息服务器宕机如何能够被生产者感知，NameServer就是为了解决上述的问题。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15625684305136.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/7/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15625659827923.html">
+                
+                  <h1>RocketMQ概览</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>RocketMQ基于主体的发布订阅模式，核心功能包括: 消息发送、消息存储Broker、消息消费。</p>
+
+<p><strong>自研NameServer充当注册中心</strong>，实现元数据管理(Tocpic路由信息等)，Topic路由信息无须再集群之间保持强一致，追求最终一致性，能够容忍分钟级的不一致。基于此，NameServer之间不会互相通信因此对网络的要求降低了，同时对比zk性能也有很大的提升。</p>
+
+<p><strong>高效的IO存储机制</strong>RocketMQ准求消息发送的高吞吐量，存储文件设计成文件组的概念，组内单个文件大小固定，方便内存映射机制，所有的消息存储基于顺序写，极大的提供了消息的写性能，同时兼容消息消费查找，引入消息消费队列文件和索引文件。</p>
+
+<p><strong>适当将某些工作下发给RocketMQ使用者</strong>我们进场会遇到类似的问题，如何确保消息一定被消费，并且只保证消息消费一次。RocketMQ在设计实现中，只会保证消息被消费者消费但不会保证只消费一次，将不重复消费下发给使用者自行解决，因此设计起来简单高效。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15625659827923.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2019/7/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='rocketmq.html'>rocketmq</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15621422737770.html">
+                
+                  <h1>通过消息头中定义长度字段来标识消息的总长度</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>TCP是以流的方式进行数据传输的，上层应用协议为了对消息进行区分，那么就可以通过这种方式，在消息头中定义数据的长度，来避免粘包造成的问题。</p>
+
+<h2 id="toc_0">LengthFieldBasedFrameDecoder</h2>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/7/3</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='netty.html'>netty</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15620535102889.html">
+                
+                  <h1>第1章 响应式编程总览</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>异步编程模式以为这在执行main函数的主线程下同时并行且非阻塞的运行一个或者多个任务，这类似于一个小组负责一个项目，会在主任务进展过程中同时要求组里的一些人执行一些独立的相关的任务，而主线程只需要需要相关的结果。</p>
+
+<p>异步编程模式最主要的好处<strong>使程序的性能和相应速度得到大幅提升</strong></p>
+
+<h2 id="toc_0">并发与并行</h2>
+
+<p><strong>并发</strong><br/>
+很好的利用了CPU时间片的特性，也就是操作系统在当前时间片选择并运行一个任务，接着在下一个时间片内选择并运行另一个任务，把前一个任务设置为等待状态。</p>
+
+<p>并发带来的问题</p>
+
+<ul>
+<li>频繁的上下文切换，会导致降低性能，例如Stream中的并行流当任务量很小的时候</li>
+<li>频繁的开启关闭线程，会产生大量的性能开销，导致降低程序性能</li>
+<li>当线程大量阻塞在等待IO的过程中，并发会阻塞CPU资源。</li>
+<li>共享数据问题，并发会带来各个想成中的状态的一致性</li>
+</ul>
+
+<p><strong>并行</strong></p>
+
+<p>在多个CPU核上同一时间运行多个任务，或者一个任务分为多块执行<code>ForkJoin</code>，在单核CPU不存在并行。</p>
+
+<p><u>总结下，多线程就以为并发，但是并行只发生在将这些线程同一时间调度分配到不通CPU核上执行的时候，也就是说并行是并发的一种特定形式。</u></p>
+
+<h2 id="toc_1">并行开发初探</h2>
+
+<p>CPU是一个接着一个指令执行任务的，类比项目分解，这里所谓的并行开发就是讲一个大任务拆分成许多部分来同时执行的，这样就更好的利用了多处理器多核环境，而拆分的每个任务都是独立执行的，并且每个任务批次之间的执行顺序也没什么关系，通过并行执行，加快解决速度。</p>
+
+<p>可以想象一下java中的<code>Stream</code>或者linux中的管道，从中抽象出一个好用的模型，然后将并发处理的开关操作作为一环加入。</p>
+
+<h2 id="toc_2">流 Stream</h2>
+
+<p>特性：</p>
+
+<ul>
+<li>流中的元素是有顺序的</li>
+<li>流需要一个数据源，可以是集合、数组、文件等等</li>
+<li>丰富而流畅的处理操作API，如filter、map、skip、limit等等</li>
+<li>包含一些引入操作，例如元素迭代</li>
+</ul>
+
+<h2 id="toc_3">响应式流 Reactive Stream</h2>
+
+<h3 id="toc_4">响应流的特性</h3>
+
+<h4 id="toc_5">1. 异步</h4>
+
+<p>在传统的开发模式下，我们是一个方法接着一个方法执行的，最终消耗的时间长是这些方法消耗的总时长，而基于异步编程模式，由于这些操作时同时并行执行的，因此最终消耗的市场是这些操作中消耗时间最长的操作所消耗的时长。</p>
+
+<h4 id="toc_6">2. 背压 Back Pressure</h4>
+
+<p>背压是响应流的一个规范，流中的元素由生产者Producer在一端生产出来，而在另一端由消费者Consumer消费掉，一旦元素的生产速度超过了消费者的消费速度，就会造成挤压，随着这种挤压的不断增加程序性能就会下降直至程序挂掉，背压Back Pressure就是解决这个问题的，虽然他可能会增加元素的处理时间，但是它建立一个弹性机智，允许程序内部按需调节而不至于使程序崩溃。</p>
+
+<p>元素由发布者生产、发布由订阅者货消费者在下游收集截下来，消费者会根据需求发送一个信号给上游，一次来保证可以将所需元素安全的推送给消费者，而发送信号这个动作是异步进行的。对应订阅者来讲其可以通过一个拉取策略来发送更多的请求以获取元素。</p>
+
+<h2 id="toc_7">响应式开发的设计原则</h2>
+
+<p>分而治之的思想，我们讲一个大任务分解成很多小任务并发执行增加处理速度，通过响应式编程设计即可以轻松的做到这一点。</p>
+
+<p>响应式系统提供了注入可响应能力、高可用性、弹性机智、消息驱动和可扩展等机智，从而确保响应式编程不会使系统资源一直被占用，这样可以是系统的其他组件正常运行。</p>
+
+<h4 id="toc_8">1. 可响应能力</h4>
+
+<p>可相应能力是一个应用程序最重要的功能，在编程的时候我们希望能有一个高效、统一的格式，包括对错误的处理响应，类似于Spring的<code>ExceptionHandler</code></p>
+
+<h4 id="toc_9">2. 高可用性</h4>
+
+<p>我们的应用可能会挂掉，无法提供服务，因此我们可以提供各种各样的集群确保服务不间断。</p>
+
+<h4 id="toc_10">3. 弹性机制</h4>
+
+<p>每当有数据到达时，系统会根据需要分配计算资源，以保证数据得到及时处理。响应式系统提供了一个弹性算法机智，当资源需求增长时，分配的计算资源也随之增长，当资源需求减少是，多分配的资源会随之回收。</p>
+
+<h4 id="toc_11">4. 消息驱动</h4>
+
+<p>消息驱动就是将每个人比作系统的一个个微服务组件，人人之间的交流通过消息进行，响应式系统通过使用异步的消息在各个组件间交流、通信，这样就可以成功的做到各个组件之间的隔离和松耦合，也就可以轻松灵活的维护扩展系统了。</p>
+
+<h4 id="toc_12">5. 可扩展性</h4>
+
+<p>开发中需求是不断的，上面提到过因为消息驱动导致各个模块之间是松耦合的因此扩展起来非常方便。</p>
+
+<h2 id="toc_13">响应式开发的好处</h2>
+
+<p>主要包含以下几点</p>
+
+<ul>
+<li>提供应用性能</li>
+<li>多核机器上，提供计算资源的利用率</li>
+<li>为异步编程提供了一个更靠谱的可维护方案</li>
+<li>提供了背压机制</li>
+</ul>
+
+<h2 id="toc_14">RxJava简介</h2>
+
+<p>消息驱动模式</p>
+
+<ul>
+<li><code>Observable</code> 表示数据源，会发出一定数量的元素，发送可能成功或者失败</li>
+<li><code>Observer</code>或<code>Subscriber</code> 表示订阅者，监听<code>Observable</code>消费其发出的元素</li>
+<li><code>Methods</code> 表示一系列操作的API，对下发数据进行加工整合</li>
+<li><code>onNext</code> 表示一个元素被<code>Observable</code>发送出去后通过该方法可以调用每个订阅者</li>
+<li><code>onComplete</code> 表示在<code>Observable</code>发送所有数据后，会调用这个方法进行收尾</li>
+<li><code>onError</code> 表示发送过程中出现错误会调用这个方法</li>
+</ul>
+
+<h2 id="toc_15">Reactor简介</h2>
+
+<p>事件驱动模式</p>
+
+<p>Reactor支持完全无阻塞，其主要的目标之一就是解决传统Web开发方案对于异步支持的各种弊病，提供了十分有效的途径支持背压。</p>
+
+<p>Reactor主要模块是<code>reactor-core</code>，Reactor3是Reactor2和RxJava的混合版本。<br/>
+主要概念</p>
+
+<ul>
+<li><code>Mono</code> 表示一个特殊的Publisher，可以发送0个或1个元素</li>
+<li><code>Flux</code> 表示一个特殊的Publisher，可以发送0-n个元素</li>
+<li>操作符 表示元素再从Publisher发送给订阅者之前，进行的一些处理</li>
+</ul>
+
+<h2 id="toc_16">Java9中的响应式编程</h2>
+
+<p>Java9 目前已经开始支持响应式编程，主要为<code>java.util.concurrent.Flow</code>类，其中所包含的接口和定义的静态方法都是用来支持Flow控制编程的。</p>
+
+<h3 id="toc_17">Java9中的响应式编程接口</h3>
+
+<p><img src="media/15620535102889/15620584499308.jpg" alt=""/></p>
+
+<p><img src="media/15620535102889/15620584866933.jpg" alt=""/><br/>
+<img src="media/15620535102889/15620584992306.jpg" alt=""/></p>
+
+<p>由图可知<code>Publisher</code>用于发布元素，并将元素推送给<code>Processor</code>,<code>Processor</code>在将元素推送给<code>Subscriber</code>，<code>Subscriber</code>通过<code>onNext</code>方法接受元素。</p>
+
+<p><code>Processor</code>通过调用<code>Subscription::request</code>方法来从<code>Publisher</code>请求元素，此时<code>Processor</code>作为订阅者。</p>
+
+<pre><code class="language-java">package com.lazyfighter.flow;
+
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Flow;
+import java.util.concurrent.Future;
+
+public class DockerXDemoPublisher&lt;T&gt; implements Flow.Publisher, AutoCloseable {
+
+    private ExecutorService executorService;
+    private CopyOnWriteArrayList&lt;DockerXDemoSubscription&gt; list = new CopyOnWriteArrayList&lt;DockerXDemoSubscription&gt;();
+
+    public DockerXDemoPublisher(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+
+    @Override
+    public void close() {
+        list.forEach(e -&gt; {
+            e.future = executorService.submit(() -&gt; e.subscriber.onComplete());
+        });
+    }
+
+    public void submit(T item) {
+        System.out.println(&quot;*********开始发布元素item : &quot;+ item + &quot;**********&quot;);
+        list.forEach(e -&gt; {
+            e.future = executorService.submit(() -&gt; e.subscriber.onNext(item));
+        });
+    }
+
+    @Override
+    public void subscribe(Flow.Subscriber subscriber) {
+
+        subscriber.onSubscribe(new DockerXDemoSubscription&lt;T&gt;(subscriber, executorService));
+        list.add(new DockerXDemoSubscription(subscriber, executorService));
+    }
+
+
+    static class DockerXDemoSubscription&lt;T&gt; implements Flow.Subscription {
+
+        private final Flow.Subscriber&lt;? super T&gt; subscriber;
+        private final ExecutorService executorService;
+        private Future&lt;?&gt; future;
+        private T item;
+        private boolean completed;
+
+        public DockerXDemoSubscription(Flow.Subscriber&lt;? super T&gt; subscriber, ExecutorService executorService) {
+            this.subscriber = subscriber;
+            this.executorService = executorService;
+        }
+
+        @Override
+        public void request(long n) {
+            if (n != 0 &amp;&amp; !completed) {
+                if (n &lt; 0) {
+                    IllegalArgumentException exception = new IllegalArgumentException();
+                    executorService.execute(() -&gt; subscriber.onError(exception));
+                } else {
+                    future = executorService.submit(() -&gt; subscriber.onNext(item));
+                }
+            } else {
+                subscriber.onComplete();
+            }
+        }
+
+        @Override
+        public void cancel() {
+            completed = true;
+            if (future != null &amp;&amp; !future.isCancelled()) {
+                this.future.cancel(true);
+            }
+        }
+    }
+
+}
+
+
+
+
+</code></pre>
+
+<pre><code class="language-java">package com.lazyfighter.flow;
+
+
+import java.util.concurrent.Flow;
+
+public class DockerXDemoSubscriber&lt;T&gt; implements Flow.Subscriber&lt;T&gt; {
+
+    private String name;
+    private Flow.Subscription subscription;
+    private long bufferSize;
+    long count;
+
+
+    @Override
+    public void onSubscribe(Flow.Subscription subscription) {
+        this.subscription = subscription;
+        subscription.request(bufferSize);
+        System.out.println(&quot;开始onSubscribe订阅&quot;);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+        }
+    }
+
+    @Override
+    public void onNext(T item) {
+        System.out.println(&quot; ##### &quot; + Thread.currentThread().getName() + &quot; ----- name :&quot; + name + &quot;item: &quot; + item);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+        }
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        throwable.printStackTrace();
+    }
+
+    @Override
+    public void onComplete() {
+        System.out.println(&quot;completed&quot;);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Flow.Subscription getSubscription() {
+        return subscription;
+    }
+
+    public long getBufferSize() {
+        return bufferSize;
+    }
+
+    public DockerXDemoSubscriber(long bufferSize, String name) {
+        this.name = name;
+        this.bufferSize = bufferSize;
+    }
+}
+
+</code></pre>
+
+<pre><code class="language-java">package com.lazyfighter.flow;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
+public class main {
+
+
+    public static void main(String[] args) {
+        ExecutorService forkJoinPool = ForkJoinPool.commonPool();
+
+        try (DockerXDemoPublisher&lt;Integer&gt; publisher = new DockerXDemoPublisher&lt;&gt;(forkJoinPool)) {
+            demoSubscibe(publisher, &quot;One&quot;);
+            demoSubscibe(publisher, &quot;Two&quot;);
+            demoSubscibe(publisher, &quot;Three&quot;);
+            IntStream.range(1, 5).forEach(publisher::submit);
+        } finally {
+            try {
+                forkJoinPool.shutdown();
+                int shutDownDelaySec = 1;
+                System.out.println(&quot;.........等待 &quot; + shutDownDelaySec + &quot;秒后结束服务.......&quot;);
+                forkJoinPool.awaitTermination(shutDownDelaySec, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                System.out.println(&quot;shut down now&quot;);
+                List&lt;Runnable&gt; runnables = forkJoinPool.shutdownNow();
+                System.out.println(&quot;还剩&quot; + runnables.size() + &quot;个任务等待执行&quot;);
+            }
+        }
+    }
+
+
+    private static void demoSubscibe(DockerXDemoPublisher&lt;Integer&gt; publisher, String subscriberName) {
+        DockerXDemoSubscriber&lt;Integer&gt; subscriber = new DockerXDemoSubscriber&lt;&gt;(4L, subscriberName);
+        publisher.subscribe(subscriber);
+    }
+
+}
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2019/7/2</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Java%E7%BC%96%E7%A8%8B%E5%8F%91%E6%94%BE%E8%AE%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0.html'>Java编程发放论读书笔记</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="15616218525138.html">
                 
@@ -227,201 +738,6 @@
                 </div>
               </div><!-- article -->
         
-			<div class="article">
-                <a class="clearlink" href="15615315268575.html">
-                
-                  <h1>HTTP协议导出流程</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>DUBBO的HTTP协议导出主要为<code>dubbo-rcp-http</code>的类<code>HttpProtocol</code>类。</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15615315268575.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/26</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-dubbo.html'>apache-dubbo</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15614551521203.html">
-                
-                  <h1>SpringServletContainerInitializer分析</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p><code>SpringServletContainerInitializer</code>实现了接口<code>ServletContainerInitializer</code></p>
-
-<p><code>ServletContainerInitializer</code>是用来Servlet3.0上面支持的，主要目的是采用代码的方式取代<code>web.xml</code>方式，在任何的Servlet容器启动的时候将会通过SPI加载该类如果spring-web在classpath下面，通过<code>META-INF/services/javax.servlet.ServletContainerInitializer</code>进行加载，实例化此类调用<code>nStartup(java.util.Set&lt;java.lang.Class&lt;?&gt;&gt;, javax.servlet.ServletContext)</code>方法</p>
-
-<!-- more --->
-
-<p>同时web应用也可以通过web.xml中的属性<code>metadata-complete</code>来限制对Servlet的扫描，可以通过属性<code>absolute-ordering</code>来限制对<code>ServletContainerInitializer</code>的扫描，不过可以通过配置属性来扫描启用<code>SpringServletContainerInitializer</code>。</p>
-
-<pre><code class="language-text">&lt;absolute-ordering&gt;
-   &lt;name&gt;some_web_fragment&lt;/name&gt;
-   &lt;name&gt;spring_web&lt;/name&gt;
- &lt;/absolute-ordering&gt;
-````
-</code></pre>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2019/6/25</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='spring.html'>spring</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15614441966918.html">
-                
-                  <h1>HttpInvokerServiceExporter</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>TODO 分析</p>
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                  
-                    <span class="date">2019/6/25</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='spring.html'>spring</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15610881141937.html">
-                
-                  <h1>Camel中的Component</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>如果把Routes比作一条公路，那么<code>Component</code>就类似于公路的入口以及出口</p>
-
-<p><img src="media/15610881141937/15610881830643.jpg" alt=""/></p>
-
-<p><code>Component</code>要实现接口，主要职责为<code>Endpoint</code>的生产工厂</p>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15610881141937.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/21</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
-			<div class="article">
-                <a class="clearlink" href="15610187409682.html">
-                
-                  <h1>在Camel中使用Bean</h1>
-                  <div class="a-content">
-                      
-                      <div class="a-content-text">
-                        
-                        	<p>Camel提供了调用bean的方式</p>
-
-<p>例如我们目前有这样一个Bean</p>
-
-<pre><code class="language-java">public class HelloBean {
-    public String hello(String name) {
-        return &quot;Hello &quot; + name;
-    } 
-}
-
-</code></pre>
-
-
-                        
-                      </div>
-                  </div>
-                </a>
-                <div class="read-more clearfix">
-                  <div class="more-left left">
-                   <a href="15610187409682.html">Read more</a>&nbsp;&nbsp; 
-                    <span class="date">2019/6/20</span>
-                    <span>posted in&nbsp;</span> 
-          				  
-          					    <span class="posted-in"><a href='apache-camel.html'>apache-camel</a></span>
-          				   
-                  </div>
-                  <div class="more-right right">
-                  <span class="comments">
-                      
-
-                       
-                  </span>
-                  </div>
-                </div>
-              </div><!-- article -->
-        
               
 
 
@@ -480,6 +796,12 @@
         
             <a href="apache-dubbo.html"><strong>apache-dubbo</strong></a>
         
+            <a href="Java%E7%BC%96%E7%A8%8B%E5%8F%91%E6%94%BE%E8%AE%BA%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0.html"><strong>Java编程发放论读书笔记</strong></a>
+        
+            <a href="netty.html"><strong>netty</strong></a>
+        
+            <a href="rocketmq.html"><strong>rocketmq</strong></a>
+        
             <a href="apache-camel.html"><strong>apache-camel</strong></a>
         
             <a href="sofa-rpc.html"><strong>sofa-rpc</strong></a>
@@ -505,31 +827,31 @@
 	      
 		      
 			      <li class="post">
-			        <a href="15616218525138.html">Dubbo服务的导出过程</a>
+			        <a href="15625738990440.html">Broker启动流程</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615417791171.html">Dubbo中的自适应</a>
+			        <a href="15625684305136.html">路由中心NameServer</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615331954677.html">DUBBO里面的Config</a>
+			        <a href="15625659827923.html">RocketMQ概览</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15615315268575.html">HTTP协议导出流程</a>
+			        <a href="15621422737770.html">通过消息头中定义长度字段来标识消息的总长度</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15614551521203.html">SpringServletContainerInitializer分析</a>
+			        <a href="15620535102889.html">第1章 响应式编程总览</a>
 			      </li>
 		     
 		  
